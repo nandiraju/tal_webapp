@@ -1,0 +1,228 @@
+<style>
+    .category_option_form_segment {
+        width: 500px;
+        margin: auto !important;
+        border: 1px solid silver;
+    }
+</style>
+
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+    <div class="ui two column stackable grid middle aligned container">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="tasks teal icon"></i>
+                <div class="content">
+                    Create category option
+                    <div class="sub header">Enter category option details</div>
+                </div>
+            </h4>
+        </div>
+
+    </div>
+    <div class="ui divider"></div>
+    <div class="ui container">
+        <div class="ui center aligned middle aligned basic segment category_option_form_segment">
+            <div class="ui form" id="event-form" style="background:#f5f5f5;padding:20px;">
+                <form class="ui" id="category-options-form">
+                    <div class="field">
+                        <div class="ui input left icon">
+                            <i class="edit blue icon"></i>
+                            <input type="text" name="name" id="category-option-name" placeholder="Enter option name" />
+                        </div>
+                    </div>
+                    <div class="field">
+                        <textarea rows="2" id="category-option-description" name="description"
+                            id="category-option-description" placeholder="Enter description"></textarea>
+                    </div>
+                    <div class="three fields dynamic-fields-group" id="category-options-key-value-input-group">
+                        <div class="field">
+                            <label>Value</label>
+                            <input placeholder="Enter value" type="text" name="option_value[]">
+                        </div>
+                        <div class="field">
+                            <label>Display Text</label>
+                            <input placeholder="Enter text" type="text" name="option_display_text[]">
+                        </div>
+                        <div class="field">
+                            <label>&nbsp;</label>
+                            <button type="button"
+                                class="ui button icon red left floated category-option-remove-dynamic-fields">
+                                <i class="close icon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <button type="button" class="ui button icon green left floated"
+                            id="category-option-add-more-button">
+                            <i class="plus icon"></i>
+                        </button>
+                    </div>
+
+                    <div class="center aligned field">
+                        <button type="button" class="ui tiny button red right floated"
+                            id="category-option-delete-button">Delete</button>
+                        <button type="button" class="ui tiny button orange right floated"
+                            id="category-option-cancel-button">Cancel</button>
+                        <button class="ui tiny button blue right floated submit" id="category-option-save-button"
+                            type="submit">Save</button>
+                        <br>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <template id="category-option-add-more-form-template">
+            <div class="three fields dynamic-fields-group">
+                <div class="field">
+                    <input placeholder="Enter value" type="text" name="option_value[]">
+                </div>
+                <div class="field">
+                    <input placeholder="Enter text" type="text" name="option_display_text[]">
+                </div>
+                <div class="field">
+                    <a type="button" class="ui button icon red left floated category-option-remove-dynamic-fields">
+                        <i class="close icon"></i>
+                    </a>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $("#type-homeless").hide();
+        $("#type-education").hide();
+        $("#type-medical").hide();
+
+        function resetCategoryOptionForm() {
+            // reset form
+            $("#name").val("");
+            $("#description").val("");
+        }
+
+        function enableCategoryOptionFormValidations() {
+            $('#category-options-form')
+                .form({
+                    // on: 'blur',
+                    inline: true,
+                    fields: {
+                        name: {
+                            identifier: 'name',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please enter category name'
+                            }]
+                        },
+                        description: {
+                            identifier: 'description',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please enter description'
+                            }]
+                        }
+                    },
+                    onSuccess: function () {
+                        const opt_values = [];
+                        const opt_display_texts = [];
+                        $("input[name='option_value[]']").map(function () {
+                            opt_values.push($(this).val())
+                        })
+
+                        $("input[name='option_display_text[]']").map(function () {
+                            opt_display_texts.push($(this).val())
+                        })
+                        const concat_array_options = _.zipObject(opt_values, opt_display_texts);
+                        const fArr = []
+                        const remove_empty_arr = _.map(concat_array_options, (val, key) => {
+                            return (val && key) ? fArr.push({ key, val }) : null
+                        })
+
+                        createEntry(TABLE_NAME, {
+                            name: $("#category-option-name").val(),
+                            description: $("#category-option-description").val(),
+                            options: fArr,
+                            status: true
+                        });
+                        toastr["success"]("Created new Category Option successfully", "Success");
+                        showPage("#/category_options");
+                        return false;
+                    },
+                    onFailure: function () {
+                        //toastr["error"]("Created new Category Option successfully", "Error");
+                        debug('Form validation error')
+                        return false;
+                    }
+                });
+        }
+
+
+        let TABLE_NAME = "donation_category_options";
+        let edit_mode = false;
+
+        resetCategoryOptionForm(); // clear form
+        $("#category-option-delete-button").hide();
+        var catValue = null;
+        var selected_donation_category_option = _.find(App.donation_category_options, {
+            id: App.donation_category_option_id
+        });
+
+        if (selected_donation_category_option) {
+            edit_mode = true;
+            $("#category-option-delete-button").show();
+            $("#title").val(selected_donation_category_option.title);
+            $("#description").val(selected_donation_category_option.description);
+        }
+
+        // $("#category-option-save-button").click(function (e) {
+        //     if (edit_mode) {
+        //         debug("updating");
+        //         // updateEntry(TABLE_NAME, selected_donation_category_option.id, {
+        //         //     title: $("#title").val(),
+        //         //     description: $("#event-description").val(),
+        //         //     category: $("#category").val(),
+        //         //     catType: $("")
+        //         // });
+        //         toastr["success"]("Category option updated successfully", "Success");
+        //     } else {
+        //         debug("Creating");
+        //         // createEntry(TABLE_NAME, {
+        //         //     title: $("#title").val(),
+        //         //     description: $("#event-description").val(),
+        //         //     category: $('#category option:selected').text(),
+        //         //     category_type: $('#cat-type option:selected').text()
+        //         // });
+        //         debug($('#cat-type option:selected').val())
+        //         toastr["success"]("Created new Category Option successfully", "Success");
+        //     }
+
+        //     showPage("#/category_options");
+        // });
+
+        $("#category-option-cancel-button").click(function (e) {
+            showPage("#/category_options");
+        });
+
+        $("#category-option-delete-button").click(function (e) {
+            if (edit_mode) {
+                deleteEntry(TABLE_NAME, selected_donation_category_option.id);
+                toastr["success"]("Deleted category option successfully", "Success");
+            }
+            showPage("#/category-option");
+        });
+
+        $("body").on("click", "#category-option-add-more-button", function (e) {
+            const dynamicFileds = $("#category-option-add-more-form-template").html();
+            $(this).before(dynamicFileds);
+            e.stopImmediatePropagation();
+        });
+
+        $("body").on("click", ".category-option-remove-dynamic-fields", function (e) {
+            const get_dynamic_field_group_count = $(".category-option-remove-dynamic-fields").length
+
+            if (get_dynamic_field_group_count > 1) {
+                $(this).parent().parent().remove();
+            }
+        });
+
+        enableCategoryOptionFormValidations();
+    });
+</script>

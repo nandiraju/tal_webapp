@@ -1,0 +1,409 @@
+<style></style>
+<div class="screen-wrapper">
+    <br />
+    <div class="ui container stackable grid">
+        <div class="twelve wide column">
+            <div class="ui container">
+                <br>
+                <div class="ui three column grid stackable doubling center aligned">
+                    <div class="column">
+                        <div class="ui segment blue center aligned">
+                            <div class="ui blue statistic mini">
+                                <div class="value" id="dashboard_donation_sum">
+                                    <div class="ui active mini loader"></div>
+                                    $0
+                                </div>
+                                <div class="label">
+                                    <i class="arrow circle up icon red outline alternate"></i> Total Donations
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="ui segment green center aligned">
+                            <div class="ui green statistic mini ">
+                                <div class="value" id="dashboard_request_amount_sum">
+                                    <div class="ui active mini loader"></div>
+                                    $0
+                                </div>
+                                <div class="label">
+                                    <i class="arrow circle down icon green outline alternate"></i> Requested Amount
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="ui segment teal center aligned">
+                            <div class="ui teal statistic mini">
+                                <div class="value">
+                                    0
+                                </div>
+                                <div class="label">
+                                    <i class="heart icon green"></i> Kindness Score
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="column" id="dashboard_total_users_column">
+                        <div class="ui segment pink center aligned">
+                            <div class="ui green statistic mini">
+                                <div class="value" id="dashboard_total_users_count">
+                                    <div class="ui active mini loader"></div>
+                                    0
+                                </div>
+                                <div class="label meta-stats">
+                                    <i class="list icon teal outline alternate"></i> Total Users
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <div class="ui segment pink center aligned">
+                            <div class="ui pink statistic mini">
+                                <div class="value" id="dashboard_avg_donation_amount">
+                                    <div class="ui active mini loader"></div>
+                                    $0
+                                </div>
+                                <div class="label meta-stats">
+                                    <i class="money outline alternate icon teal"></i> Avg. Donation amount
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <div class="ui segment pink center aligned">
+
+                            <div class="ui orange statistic mini">
+                                <div class="value" id="dashboard_donation_count">
+                                    <div class="ui active mini loader"></div>
+                                    0
+                                </div>
+                                <div class="label meta-stats">
+                                    <i class="heart icon teal outline alternate"></i> # of Donations
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <br><br><br>
+            <div class="ui two column doubling grid container center aligned">
+                <div class="column">
+                    <h5 class="ui header">Donations by Category</h5>
+                    <div class="ui segment">
+                        <div class="ui active huge loader dashboard-donut-donation-loader"></div>
+                        <img class="ui centered huge image" id="dashboard_donations_by_category_graph" src="https://quickchart.io/chart?c={type:'doughnut',data:{labels:[], datasets:[{data:[]}]}}">
+                    </div>
+                </div>
+                <div class="column">
+                    <h5 class="ui header">Donations by Month</h5>
+                    <div class="ui segment">
+                        <div class="ui active huge loader dashboard-bar-monthly-donation-loader"></div>
+                        <img class="ui centered big image" id="dashboard_donations_monthly_graph" src="https://quickchart.io/chart?c={type:'bar',data:{labels:[], datasets:[{label:'Paid',data:[]}]}}">
+
+                    </div>
+                </div>
+
+                <div class="column">
+                    <h5 class="ui header">Requests created by Category</h5>
+                    <div class="ui segment">
+                        <div class="ui active huge loader dashboard-line-request-created-category"></div>
+                        <img class="ui centered huge image" id="dashboard_request_created_graph" src="https://quickchart.io/chart?c={type:'line',data:{labels:[], datasets:[]}}">
+                    </div>
+                </div>
+
+                <div class="column">
+                    <h5 class="ui header">Requests paid by category</h5>
+                    <div class="ui segment">
+                        <div class="ui active huge loader dashboard-pie-request-by-category"></div>
+                        <img class="ui centered huge image" id="dashboard_request_by_category_line_graph" src="https://quickchart.io/chart?c={type:'pie',data:{labels:[], datasets:[]}}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="four wide column left aligned" style="background: #f5f5f5;">
+            <div class="ui container">
+                <div class="ui header page-left-header">TAL Updates</div>
+                <div class="ui mini feed segment">
+                    <div class="event">
+                        <div class="label">
+                            <img src="https://semantic-ui.com/images/wireframe/square-image.png" />
+                        </div>
+                        <div class="content">
+                            <div class="date">
+                                3 days ago
+                            </div>
+                            <div class="summary">
+                                Tal Event <a>November 15th</a> in <a>Miliptas</a> ICC center.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event">
+                        <div class="label">
+                            <i class="announcement orange icon"></i>
+                        </div>
+                        <div class="content">
+                            <div class="date">
+                                5 days ago
+                            </div>
+                            <div class="summary">
+                                Bollywood singer Sunita will be performing at the TAL event.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui header page-left-header">News Topics</div>
+                <div id="news-items-holder">
+                    <div class="ui active centered inline loader"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="news-items-template">
+    {{#items}}
+    <div class="ui segment center aligned middle aligned news-card" data-link-url="{{ feedlink }}"
+        style="cursor: pointer;">
+        {{#image}}
+        <img src="{{ image }}" style="height:50px;margin:auto;" />
+        {{/image}}
+        {{^image}}
+        {{/image}}
+        <p class="ellipsis" style="font-style:plain;">
+            {{ title }}
+        </p>
+    </div>
+    {{/items}}
+</template>
+
+<script type="text/javascript">
+    $(function() {
+
+        if (isMobileDevice || isSmallScreen()) {
+            $("#title-text").html("Dashboard");
+            $(".remove-on-mobile").remove();
+            $("#right-plus-button").hide();
+            $("#right-plus-button").attr("data-button-context", "");
+        }
+
+        const USERS_TABLE_NAME = "user_profile";
+        const REQUESTS_TABLE_NAME = "donation_requests";
+        const DONATIONS_TABLE_NAME = "donations";
+        var current_user_roles = get_current_user_roles();
+
+        loadData("homeless kids in America");
+        App.Events.listen("feed-data-loaded", function(payload) {
+            App.Utils.loadTemplateToHolder(
+                "#news-items-template",
+                "#news-items-holder", {
+                    items: payload.data
+                }
+            );
+            $(".news-card").click(function(e) {
+                var link = $(this).attr("data-link-url");
+                App.Utils.showInBrowser(link);
+            });
+        });
+
+        // fecth request, donations & users data. calculate the dashboard related statistics using lodash
+        function renderUsersItems() {
+            let get_dashboard_users_qry = App.db.collection(USERS_TABLE_NAME);
+            if (current_user_roles.includes('admin') || current_user_roles.includes('tal_admin')) {
+                get_dashboard_users_qry.get().then(snapshot => {
+                    let changes = snapshot.docChanges();
+                    const all_users = snapshot.docs.map(function(documentSnapshot) {
+                        return documentSnapshot.data();
+                    });
+                    $("#dashboard_total_users_count").html(all_users.length)
+                });
+            } else {
+                $("#dashboard_total_users_column").hide();
+            }
+        }
+
+        function renderDonationsItems() {
+            let get_dashboard_donations_qry = App.db.collection(DONATIONS_TABLE_NAME);
+            if (current_user_roles.includes('admin') || current_user_roles.includes('tal_admin')) {
+                // if admin
+            } else {
+                if (App.User) {
+                    get_dashboard_donations_qry = get_dashboard_donations_qry.where('user_id', '==', App.User
+                        .uid);
+                }
+            }
+
+            get_dashboard_donations_qry.get().then(snapshot => {
+                let changes = snapshot.docChanges();
+                const all_donations = snapshot.docs.map(function(documentSnapshot) {
+                    return documentSnapshot.data();
+                });
+                const donation_sum = _.sumBy(all_donations, function(drow) {
+                    if (!drow.donated_amount) {
+                        return;
+                    }
+                    return Number(drow.donated_amount);
+                });
+                const donation_count = Number(all_donations.length);
+
+                $("#dashboard_donation_count").html((donation_count) ? donation_count : "0");
+                $("#dashboard_donation_sum").html("$" + donation_sum);
+                const avg_donations = donation_sum / donation_count;
+                $("#dashboard_avg_donation_amount").html("$" + Math.floor(((avg_donations) ?
+                    avg_donations : '0')));
+
+                // for Donations by Category
+                var category_list = [];
+                var amount_list = [];
+                var donation_data_parse =
+                    _(all_donations).groupBy('category').map((objs, key) => ({
+                        'category': key,
+                        'amount': _.sumBy(objs, item => Number(item.donated_amount))
+                    })).value().map(function(item) {
+                        category_list.push(item.category);
+                        amount_list.push(item.amount);
+                    });
+                const dashboard_donate_by_category_graph_url =
+                    "https://quickchart.io/chart?c={type:'donut',data:{labels:" + JSON.stringify(
+                        category_list) + ", datasets:[{data:" + JSON.stringify(amount_list) + "}]}}";
+                $("#dashboard_donations_by_category_graph").attr('src',
+                    dashboard_donate_by_category_graph_url);
+                $(".dashboard-donut-donation-loader").hide();
+
+                // for Donations by Month
+                const get_monthly_donations = all_donations.map((data) => {
+                    return {
+                        donation_month: moment(Number(data.created_at)).format("MMMM"),
+                        donated_amount: Number(data.donated_amount)
+                    }
+                })
+
+                const month_list = [];
+                const monthly_sum = [];
+                _(get_monthly_donations).groupBy('donation_month').map((objs, key) => ({
+                    'month': key,
+                    'amount': _.sumBy(objs, item => Number(item.donated_amount))
+                })).value().map(function(item) {
+                    month_list.push(item.month);
+                    monthly_sum.push(item.amount);
+                });
+
+                const dashboard_donate_by_month_graph_url =
+                    "https://quickchart.io/chart?c={type:'bar',data:{labels:" + JSON.stringify(
+                        month_list) + ", datasets:[{label:'Paid', data:" + JSON.stringify(monthly_sum) +
+                    "}]}}";
+                $("#dashboard_donations_monthly_graph").attr('src',
+                    dashboard_donate_by_month_graph_url);
+                $(".dashboard-bar-monthly-donation-loader").hide();
+            });
+        }
+
+        function renderRequestItems() {
+            let get_dashboard_requests_qry = App.db.collection(REQUESTS_TABLE_NAME);
+            if (current_user_roles.includes('admin') || current_user_roles.includes('tal_admin')) {
+                // if admin
+            } else {
+                if (App.User) {
+                    get_dashboard_requests_qry = get_dashboard_requests_qry.where('user_id', '==', App.User
+                        .uid);
+                }
+            }
+            get_dashboard_requests_qry.get().then(snapshot => {
+                let changes = snapshot.docChanges();
+                const all_requests = snapshot.docs.map(function(documentSnapshot) {
+                    return documentSnapshot.data();
+                });
+                const request_sum = _.sumBy(all_requests, function(rrow) {
+                    if (!rrow.requested_amount) {
+                        return;
+                    }
+                    return parseInt(rrow.requested_amount, 10);
+                });
+                const request_count = all_requests.length;
+
+                $("#dashboard_request_amount_sum").html("$" + (request_sum ? request_sum : '0'));
+
+                //for Requests paid by category
+                const get_requests_by_category = _.countBy(all_requests, 'category');
+                const request_category_list = Object.keys(get_requests_by_category);
+                const request_category_count = Object.values(get_requests_by_category);
+
+                const dashboard_request_by_category_url =
+                    "https://quickchart.io/chart?c={type:'pie',data:{labels:" + JSON.stringify(
+                        request_category_list) + ", datasets:[{data:" + JSON.stringify(
+                        request_category_count) + "}]}}";
+                $("#dashboard_request_by_category_line_graph").attr('src',
+                    dashboard_request_by_category_url);
+                $(".dashboard-pie-request-by-category").hide();
+
+                // for Request created by category
+                const unique_month_names = [];
+                const filter_monthly_requests = all_requests.map((data) => {
+                    const cur_item_month = moment(Number(data.created_at)).format("MMMM")
+                    if (!unique_month_names.includes(cur_item_month)) {
+                        unique_month_names.push(cur_item_month)
+                    }
+
+                    return {
+                        month: cur_item_month,
+                        amount: Number(data.requested_amount),
+                        category: data.category
+                    }
+                })
+                const filter_requests_by_category = _.filter(filter_monthly_requests);
+                const request_category_and_month = _.chain(filter_requests_by_category).groupBy(
+                        "category")
+                    .map(function(v, i) {
+                        return {
+                            category: i,
+                            data: _.countBy(v, 'month' ? 'month' : 1)
+                        }
+                    }).value();
+
+                const final_month_arr = []
+                const test_data = request_category_and_month.map((item) => {
+                    var month_cnt_arr = [];
+                    var month_cnt = 0;
+                    var cur_data = item.data;
+                    var months_list = Object.keys(item.data);
+
+                    unique_month_names.map((m_item) => {
+                        if (months_list.includes(m_item)) {
+                            month_cnt = cur_data[m_item]
+                        } else {
+                            month_cnt = 0;
+                        }
+                        month_cnt_arr.push(month_cnt)
+                    })
+                    const str = {
+                        label: item.category,
+                        data: month_cnt_arr
+                    }
+                    final_month_arr.push(str)
+                })
+
+                const line_graph_url = "https://quickchart.io/chart?c={type:'line',data:{labels:" + JSON
+                    .stringify(unique_month_names) + ", datasets:" + JSON.stringify(final_month_arr) +
+                    "}}";
+                $("#dashboard_request_created_graph").attr('src', line_graph_url);
+                $(".dashboard-line-request-created-category").hide();
+            });
+        }
+
+        App.db.collection(USERS_TABLE_NAME).onSnapshot(snapshot => {
+            renderUsersItems();
+        });
+        App.db.collection(DONATIONS_TABLE_NAME).onSnapshot(snapshot => {
+            renderDonationsItems();
+        });
+        App.db.collection(REQUESTS_TABLE_NAME).onSnapshot(snapshot => {
+            renderRequestItems();
+        });
+    });
+</script>

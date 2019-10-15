@@ -1,0 +1,241 @@
+<style>
+
+</style>
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+    <div class="ui two column stackable grid middle aligned container">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="heart teal icon"></i>
+                <div class="content">
+                    Approve Requests
+                    <div class="sub header">Approve requests from donees</div>
+                </div>
+            </h4>
+        </div>
+        <div class="column right aligned">
+            <div class="ui tiny button blue" id="approve-requests-approve-button" style="border-radius: 15px;"
+                id="create-item-button">
+                <i class="check icon"></i> Approve</div>
+            <div class="ui tiny button red" id="approve-requests-deny-button" style="border-radius: 15px;"
+                id="create-item-button">
+                <i class="delete icon"></i> Deny</div>
+        </div>
+    </div>
+    <div class="ui divider"></div>
+    <div class="ui container">
+        <div class="ui basic segment" id="approve-requests-item-list-table-holder">
+            <div class="ui active centered inline loader"></div>
+        </div>
+        <div class="ui tiny modal" id="approve-requests-approve-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Approve Request(s)
+                </h3>
+                <br />
+                <div class="ui form" id="approve-requests-approve-form">
+                    <div class="field">
+                        <textarea rows="2" id="approve-requests-approve-comment" name="description"
+                            placeholder="Enter your comments"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="ui button blue" id="approve-requests-approve-submit-button">Approve</button>
+            </div>
+        </div>
+        <div class="ui tiny modal" id="approve-requests-deny-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Deny Request(s)
+                </h3>
+                <br />
+                <div class="ui form" id="approve-requests-deny-form">
+                    <div class="field">
+                        <textarea rows="2" id="approve-requests-deny-comment" name="description"
+                            placeholder="Enter your comments"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="ui button blue" id="approve-requests-deny-submit-button">Deny</button>
+            </div>
+        </div>
+        <template id="approve-requests-item-list-table-template">
+            <table id="approve-requests-list-table" class="ui small table selectable teal celled" width="100%">
+                <thead>
+                    <th>select</th>
+                    <th>Title</th>
+                    <th>Category Name</th>
+                    <th>Sub Category</th>
+                    <th class="centered_td">Status</th>
+                    <th>Created Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- {{#items}} -->
+                    <tr class="approve-requests-row-item" data-approve-request-row-id={{id}}>
+                        <td style="text-align: center">
+                            <div class="ui checkbox">
+                                <input type="checkbox" name="approve-item-checkbox" value={{id}}
+                                    data-approve-request-checkbox-id={{id}} class="approve-item-checkbox-cls" />
+                                <label></label>
+                            </div>
+                        </td>
+                        <td>{{title}}</td>
+                        <td>{{category}}</td>
+                        <td>{{category_type}}</td>
+                        <td class="centered_td">
+                            <i class="ui {{status_icon}} icon {{ status_color }}"></i> {{ status }}
+                        </td>
+                        <td>{{days_ago}}</td>
+                    </tr>
+                    <!-- {{/items}} -->
+                </tbody>
+            </table>
+        </template>
+    </div>
+</div>
+<script type="text/javascript">
+    App.TemplateController = {
+        data: [],
+        handleActions: function (action) {
+            alert("Fired");
+        },
+        bindListener: function () {
+            App.Events.listen("SEARCH_ACTIONS", this.handleActions);
+        },
+        render: function () {
+            var screen = App.Screens.get("screens/search.html");
+            $("#stage").html(screen);
+        }
+    };
+
+    $(function () {
+        let TABLE_NAME = "donation_requests";
+        let all_requests = [];
+
+        function refreshTableView() {
+            var options = {
+                dom: '<"ui input"f><"ui segment"t><"right-aligned-panel"p>',
+                language: {
+                    //search : "<i class='fa fa-search'></i>",
+                    //info : "_TOTAL_ entries to show (_START_ to _END_)",
+                    info: "",
+                    paginate: {
+                        first: "first",
+                        previous: "<i class='fa fa-chevron-left'></i>",
+                        next: "<i class='fa fa-chevron-right'></i>",
+                        last: "last"
+                    }
+                }
+            };
+            $("#approve-requests-list-table").DataTable();
+            $(".dataTables_filter input").css("border", "none");
+            $(".dataTables_filter input").css("border-bottom", "1px dotted silver");
+            //$(".dataTables_filter input").css("border-radius","15px");
+            $(".dataTables_filter input").css("padding", "8px");
+            $(".dataTables_filter input").css("text-align", "center");
+        }
+
+        // Update UI to show the list
+        function renderRequestItems() {
+            debug("Rendering approve request items.. ");
+            App.db.collection(TABLE_NAME).get().then(snapshot => {
+                let changes = snapshot.docChanges();
+                all_requests = [];
+                changes.forEach(change => {
+                    var one_item = change.doc.data();
+                    one_item.id = change.doc.id;
+                    var dt = parseInt(one_item.created_at);
+                    // one_item.days_ago = moment(dt).format('DD MMMM, YYYY [at] HH:mm a');
+                    one_item.days_ago = moment(dt).fromNow();
+                    one_item.isApproved = (one_item.status == 'approved') ? true : false;
+                    if (one_item.status === 'in process') {
+                        one_item.status_color = "orange";
+                        one_item.status_icon = "exclamation circle"
+                    } else if (one_item.status === 'approved') {
+                        one_item.status_color = "green";
+                        one_item.status_icon = "check"
+                    } else {
+                        one_item.status_color = "red";
+                        one_item.status_icon = "x icon"
+                    }
+                    all_requests.push(one_item);
+                });
+
+                App.Utils.loadTemplateToHolder(
+                    "#approve-requests-item-list-table-template",
+                    "#approve-requests-item-list-table-holder", {
+                        items: all_requests
+                    }
+                );
+                refreshTableView();
+            });
+        }
+
+        // deny Requests Modal
+        $("#approve-requests-deny-button").on("click", function () {
+            $("#approve-requests-deny-comment").val("");
+            $("#approve-requests-deny-modal").modal("show");
+        })
+
+        // approve Requests Modal
+        $("#approve-requests-approve-button").on("click", function () {
+            $("#approve-requests-approve-comment").val("");
+            $("#approve-requests-approve-modal").modal("show");
+        })
+
+        // Approve selected Requests
+        $("#approve-requests-approve-submit-button").on("click", function () {
+            const approve_comment_length = $("#approve-requests-approve-comment").val().trim().length
+            if (approve_comment_length < 10) {
+                toastr["error"]("Please enter comments. atleast 10 chars");
+                return;
+            }
+            const item_selected_count = $(".approve-item-checkbox-cls:checked").length;
+            if (item_selected_count > 0) {
+                $(".approve-item-checkbox-cls:checked").each(function () {
+                    debug("updating each items");
+                    const itemId = $(this).val()
+                    updateEntry(TABLE_NAME, itemId, {
+                        status: 'approved'
+                    });
+                })
+                $("#approve-requests-approve-modal").modal("hide");
+                toastr["success"]("Requests approved successfully", "Success");
+            } else {
+                toastr["error"]("No request(s) selected", "Error");
+            }
+        })
+
+        // Deny selected Requests
+        $("#approve-requests-deny-submit-button").on("click", function () {
+            const deny_comment_length = $("#approve-requests-deny-comment").val().trim().length
+            if (deny_comment_length < 10) {
+                toastr["error"]("Please enter comments. atleast 10 chars");
+                return;
+            }
+
+            const item_selected_count = $(".approve-item-checkbox-cls:checked").length
+            if (item_selected_count > 0) {
+                $(".approve-item-checkbox-cls:checked").each(function () {
+                    debug("updating each items");
+                    const itemId = $(this).val()
+                    updateEntry(TABLE_NAME, itemId, {
+                        status: 'denied'
+                    });
+                })
+                $("#approve-requests-deny-modal").modal("hide");
+                toastr["success"]("Requests denied successfully", "Success");
+            } else {
+                toastr["error"]("No request(s) selected", "Error");
+            }
+        })
+
+        App.db.collection(TABLE_NAME).onSnapshot(snapshot => {
+            renderRequestItems();
+        });
+    });
+</script>

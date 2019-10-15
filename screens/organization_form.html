@@ -1,0 +1,268 @@
+<style>
+
+</style>
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+    <div class="ui two column stackable grid middle aligned container">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="tasks teal icon"></i>
+                <div class="content">
+                    Organization
+                    <div class="sub header">Enter organization details</div>
+                </div>
+            </h4>
+        </div>
+        <div class="column right aligned">
+            <div class="ui tiny button orange" style="border-radius: 15px;" id="organizations-list-button">
+                <i class="list icon"></i> Organization list
+            </div>
+        </div>
+    </div>
+    <div class="ui divider"></div>
+    <br>
+    <div class="ui container global-modal-content"
+        style="width: 65%; margin: 0 auto; border: 1px solid #e5e5e5; padding: 15px;">
+        <!-- <h3 class="ui teal header center aligned">
+            Organization
+            <div class="sub header">Enter Organization details and click save.</div>
+        </h3> -->
+        <br />
+        <div class="ui active centered inline big loader" id="organization-loader"></div>
+        <form class="organization-form">
+            <div id="org-information-holder">
+
+            </div>
+            <div class="actions" style="height: 30px">
+                <div class="ui">
+                    <button class="ui tiny button blue right floated" id="organization-save-button">Save</button>
+                    <div class="ui tiny button red right floated" id="organization-delete-button">
+                        Delete</div>
+                    <div class="ui tiny cancel button orange right floated" id="organization-cancel-button">
+                        Cancel</div>
+                    <br />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<template id="org-template">
+    <div class="ui form">
+        <div class="field">
+            <div class="ui input left icon">
+                <i class="building blue icon"></i>
+                <input type="text" name="name" value={{name}} id="organization-name"
+                    placeholder="Enter organization name" />
+            </div>
+        </div>
+        <div class="field">
+            <select class="ui dropdown" name="org_type" id="organization-type">
+                <option value="">Select Type</option>
+                <option value="corp">Corporate</option>
+                <option value="org">Organization</option>
+            </select>
+        </div>
+        <div class="field">
+            <div class="ui input left icon">
+                <i class="certificate blue icon"></i>
+                <input type="text" value={{ein}} name="ein" id="organization-ein" placeholder="Enter EIN" />
+            </div>
+        </div>
+        <div class="field">
+            <div class="ui input left icon">
+                <i class="address card outline blue icon"></i>
+                <input type="text" value={{address}} name="address" id="organization-address"
+                    placeholder="Enter address" />
+            </div>
+        </div>
+        <div class="field">
+            <div class="ui input left icon">
+                <i class="phone blue icon"></i>
+                <input type="text" value={{phone}} name="phone" id="organization-phone" placeholder="Enter phone" />
+            </div>
+        </div>
+        <div class="field">
+            <textarea rows="2" id="organization-description" name="description"
+                placeholder="Enter organization description">{{description}}</textarea>
+        </div>
+        <input type="hidden" id="organization-id" value={{org_id}} />
+    </div>
+</template>
+
+
+<script type="text/javascript">
+    $(function() {
+        let TABLE_NAME = "organizations";
+        let all_organizations = [];
+        $("#organization-delete-button").hide();
+
+        function enableOrganizationFormValidation() {
+
+            // Custom function to validate the EIN number
+            // $.fn.form.settings.rules.checkOrgEIN = function(einValue) {
+            //     debug("Checking org details.. ", einValue);
+
+            //     var orgData = null;
+            //     const fs_checking_org_data = App.db.collection(TABLE_NAME).where('ein', '==', einValue).get().then(snapshot => {
+            //         snapshot.docs.map(function(documentSnapshot) {
+            //             orgData = documentSnapshot.data();
+            //         });
+            //     });
+
+            //     try {
+            //         if (orgData.ein && orgData.ein === einValue) {
+            //             status = false;
+            //         } else {
+            //             status = true;
+            //         }
+            //     } catch (e) {
+            //         status = true;
+            //     }
+
+            //     console.log('info data', status, orgData)
+            //     return status;
+            // };
+
+            $('.organization-form').form({
+                on: 'blur',
+                inline: true,
+                fields: {
+                    name: {
+                        identifier: 'name',
+                        rules: [{
+                            type: 'empty',
+                            prompt: 'Please enter Organization Name'
+                        }]
+                    },
+                    org_type: {
+                        identifier: 'org_type',
+                        rules: [{
+                            type: 'empty',
+                            prompt: 'Please select type'
+                        }]
+                    },
+                    phone: {
+                        identifier: 'phone',
+                        rules: [{
+                            type: 'empty',
+                            prompt: 'Please enter phone'
+                        }]
+                    },
+                    address: {
+                        identifier: 'address',
+                        rules: [{
+                            type: 'empty',
+                            prompt: 'Please enter address'
+                        }]
+                    },
+                    ein: {
+                        identifier: 'organization-ein',
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: function(value) {
+                                    if (!value) {
+                                        return "Please enter EIN";
+                                    }
+                                }
+                            },
+                            {
+                                type: 'regExp[/^\\d{2}\\-?\\d{7}$/]',
+                                prompt: "Format must be XX-XXXXXXX"
+                            },
+                            // {
+                            //     type: 'checkOrgEIN',
+                            //     prompt: "Enter this value"
+                            // }
+                        ]
+                    },
+                    description: {
+                        identifier: 'description',
+                        rules: [{
+                            type: 'empty',
+                            prompt: 'Please enter description'
+                        }]
+                    },
+                },
+                onSuccess: function(event, fields) {
+                    submitOrganizationForm();
+                    $("#organization-delete-button").hide();
+                    return false;
+                },
+                onFailure: function(event, fields) {
+                    return false;
+                }
+            });
+        }
+
+        function submitOrganizationForm() {
+            var existing_id = $("#organization-id").val();
+            if (existing_id) existing_id = existing_id.trim();
+            const orgFormData = {
+                name: $("#organization-name").val(),
+                org_type: $("#organization-type option:selected").val(),
+                ein: $("#organization-ein").val(),
+                address: $("#organization-address").val(),
+                phone: $("#organization-phone").val(),
+                description: $("#organization-description").val(),
+                user_id: App.User.uid,
+                status: 'approved'
+            }
+            if (existing_id && existing_id.length > 1) {
+                updateEntry(TABLE_NAME, existing_id, orgFormData);
+                toastr["success"]("Updated organization successfully", "Success");
+            } else {
+                createEntry(TABLE_NAME, orgFormData);
+                toastr["success"]("Created new organization successfully", "Success");
+            }
+            showPage("#/organizations");
+        };
+
+        async function getOrgDetails(org_id) {
+            var selected_organization = _.find(App.organizations, {
+                id: App.organization_id
+            });
+
+            if (selected_organization) {
+                App.Utils.loadTemplateToHolder(
+                    "#org-template",
+                    "#org-information-holder", {
+                    ...selected_organization,
+                    org_id
+                }
+                );
+                $("#organization-type").val(selected_organization.org_type);
+            } else {
+                App.Utils.loadTemplateToHolder(
+                    "#org-template",
+                    "#org-information-holder",
+                    []
+                );
+            }
+            $("#organization-loader").hide();
+            return;
+        }
+        getOrgDetails(App.organization_id ? App.organization_id : null);
+        enableOrganizationFormValidation();
+
+        $("body").on("click", "#organizations-list-button", function(e) {
+            showPage("#/organizations");
+            e.stopImmediatePropagation();
+        });
+
+        $("body").on("click", "#organization-cancel-button", function(e) {
+            showPage("#/organizations");
+            e.stopImmediatePropagation();
+        });
+
+        $("body").on("click", "#organization-delete-button", function(e) {
+            var existing_id = $("#organization-id").val();
+            if (existing_id) existing_id = existing_id.trim();
+            if (existing_id && existing_id.length > 1) {
+                deleteEntry(TABLE_NAME, existing_id);
+                toastr["success"]("Deleted organization successfully", "Success");
+            }
+            showPage("#/organizations");
+            e.stopImmediatePropagation();
+        });
+    });
+</script>

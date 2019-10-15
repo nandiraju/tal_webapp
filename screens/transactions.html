@@ -1,0 +1,224 @@
+<style>
+
+</style>
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+    <div class="ui two column stackable grid middle aligned container remove-on-mobile">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="retweet teal icon"></i>
+                <div class="content">
+                    Transactions
+                    <div class="sub header">Donation Transactions</div>
+                </div>
+            </h4>
+        </div>
+    </div>
+    <div class="ui divider remove-on-mobile"></div>
+    <div class="ui container">
+        <div class="ui basic segment" id="review-users-item-list-table-holder">
+            <div class="ui active centered inline loader"></div>
+        </div>
+        <div class="ui tiny modal" id="review-user-add-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Add User
+                    <div class="sub header">Enter user details</div>
+                </h3>
+                <br />
+                <div class="ui form" id="review-user-add-form">
+                    <form class="ui large form">
+                        <div class="ui segment">
+                            <div class="two fields">
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="user outline icon"></i>
+                                        <input type="text" name="firstname" placeholder="First Name">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="user blue outline icon"></i>
+                                        <input type="text" name="lastname" placeholder="Last Name">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="ui left icon input">
+                                    <i class="mail green icon"></i>
+                                    <input type="text" name="email" placeholder="E-mail address">
+                                </div>
+                            </div>
+
+                            <div class="two fields">
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="lock red icon"></i>
+                                        <input type="password" name="password" placeholder="Password">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="lock red icon"></i>
+                                        <input type="password" name="confirm_password" placeholder="confirm_password">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ui error message"></div>
+                    </form>
+                </div>
+            </div>
+            <div class="actions">
+                <!-- <button class="ui button blue" id="review-user-add-submit-button">Add</button> -->
+            </div>
+        </div>
+        <div class="ui tiny modal" id="review-users-approve-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Approve Request(s)
+                </h3>
+                <br />
+                <div class="ui form" id="review-users-approve-form">
+                    <div class="field">
+                        <textarea rows="2" id="review-users-approve-comment" name="description" placeholder="Enter your comments"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="ui button blue" id="review-users-approve-submit-button">Approve</button>
+            </div>
+        </div>
+        <div class="ui tiny modal" id="review-users-deny-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Deny Request(s)
+                </h3>
+                <br />
+                <div class="ui form" id="review-users-deny-form">
+                    <div class="field">
+                        <textarea rows="2" id="review-users-deny-comment" name="description" placeholder="Enter your comments"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="ui button blue" id="review-users-deny-submit-button">Deny</button>
+            </div>
+        </div>
+        <template id="review-users-item-list-table-template">
+      <table id="review-users-list-table" class="ui small table selectable teal celled" width="100%">
+        <thead>
+          <tr>
+            <th>Txn ID</th>
+            <th>Name</th>
+            <th>Amount ($)</th>
+            <th>Created Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- {{#items}} -->
+          <tr class="review-users-row-item" data-review-user-row-id={{id}}>
+            <td>{{paymentID}}</td>
+            <td>{{user_name}}</td>
+            <td>{{amount}}</td>
+            <td>{{days_ago}}</td>
+          </tr>
+          <!-- {{/items}} -->
+        </tbody>
+      </table>
+    </template>
+    </div>
+</div>
+<script type="text/javascript">
+    App.TemplateController = {
+        data: [],
+        handleActions: function(action) {
+            alert("Fired");
+        },
+        bindListener: function() {
+            App.Events.listen("SEARCH_ACTIONS", this.handleActions);
+        },
+        render: function() {
+            var screen = App.Screens.get("screens/search.html");
+            $("#stage").html(screen);
+        }
+    };
+
+    $(function() {
+        let TABLE_NAME = "transactions";
+        let all_users = [];
+        const current_user_roles = get_current_user_roles();
+
+        var isAdmin = true;
+        if (current_user_roles && !current_user_roles.includes("tal_admin")) {
+            isAdmin = false;
+        }
+
+        if (App.isMobile || isSmallScreen()) {
+            $("#title-text").html("Transactions");
+            $(".remove-on-mobile").remove();
+            $("#right-plus-button").hide();
+            $("#right-plus-button").attr("data-button-context", "");
+        }
+
+
+        function refreshTableView() {
+            var options = {
+                dom: '<"ui input"f><"ui segment"t><"right-aligned-panel"p>',
+                language: {
+                    //search : "<i class='fa fa-search'></i>",
+                    //info : "_TOTAL_ entries to show (_START_ to _END_)",
+                    info: "",
+                    paginate: {
+                        first: "first",
+                        previous: "<i class='fa fa-chevron-left'></i>",
+                        next: "<i class='fa fa-chevron-right'></i>",
+                        last: "last"
+                    }
+                }
+            };
+            $("#review-users-list-table").DataTable();
+            $(".dataTables_filter input").css("border", "none");
+            $(".dataTables_filter input").css("border-bottom", "1px dotted silver");
+            //$(".dataTables_filter input").css("border-radius","15px");
+            $(".dataTables_filter input").css("padding", "8px");
+            $(".dataTables_filter input").css("text-align", "center");
+        }
+
+        // Update UI to show the list
+        function renderTransactionItems() {
+            debug("Rendering transactions items.. ");
+            let get_txns_qry = App.db.collection(TABLE_NAME);
+            if (!isAdmin) {
+                get_txns_qry = get_txns_qry.where('user_id', '==', App.User.uid);
+            }
+            get_txns_qry.get().then(snapshot => {
+                let changes = snapshot.docChanges();
+                all_users = [];
+                changes.forEach(change => {
+                    var one_item = change.doc.data();
+                    var dt = parseInt(one_item.created_at);
+                    one_item.days_ago = moment(dt).fromNow();
+                    one_item.user_name = one_item.user_info && (one_item.user_info.first_name + ' ' + one_item
+                        .user_info.last_name);
+                    all_users.push(one_item);
+                });
+
+                App.Utils.loadTemplateToHolder(
+                    "#review-users-item-list-table-template",
+                    "#review-users-item-list-table-holder", {
+                        items: all_users
+                    }
+                );
+                refreshTableView();
+            });
+        }
+
+        App.db.collection(TABLE_NAME).onSnapshot(snapshot => {
+            renderTransactionItems();
+        });
+    });
+</script>

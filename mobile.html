@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- <meta name="viewport" content="initial-scale=1.0, user-scalable=no"> -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="libs/semantic.min.css" />
+    <link rel="stylesheet" href="libs/animate.min.css" />
+    <link rel="stylesheet" href="libs/nprogress.min.css" />
+    <link href="https://fonts.googleapis.com/css?family=Rajdhani:400,600" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+
+    <link href='css/default.css' rel='stylesheet' type='text/css'>
+    <style>
+        #content {
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        
+        html {
+            touch-action: manipulation;
+        }
+        
+        .navi-link {
+            margin-left: 10px !important;
+            cursor: pointer;
+        }
+        
+        .menu-head {
+            border: none !important;
+            border-bottom: 1px dotted #336699 !important;
+            background: #003366 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="backdrop"></div>
+    <div id="sidenav">
+        <div class="ui inverted vertical menu side-menu-items" style="margin-top:1px;">
+
+            <h4 class="ui inverted header item centered">
+                <div class="content">
+                    Touch-A-Life
+                    <div class="sub header" style="font-size:11px;">
+                        engage, educate, empower
+                    </div>
+                </div>
+            </h4>
+            <h5 class="ui basic segment center aligned" style="padding:1px;margin-top:5px;color:aqua">
+                <span id="user-name-in-header"></span>
+            </h5>
+
+            <div id="user-links">
+            </div>
+
+            <div id="navigation-links">
+            </div>
+            <a class="item" href="#/welcome"><i class="home chart icon  left"></i> Home
+            </a>
+            <a class="item" href="#/dashboard"><i class="line chart icon  left"></i> Dashboard
+            </a>
+            <a class="item donee-item" href="#/requests"><i class="tasks icon  left"></i> Requests
+            </a>
+            <a class="item donor-item" href="#/donations"><i class="heart outline icon  left"></i> Donations
+            </a>
+            <!-- <a class="item" href="#/invite_friends"><i class="user icon teal left"></i> Invite Friends
+            </a> -->
+            <a class="item admin-item" href="#/organizations"><i class="building icon outline left"></i> Organizations
+            </a>
+            <a class="item admin-item" id="transactions" href="#/transactions"><i class="retweet icon  left"></i>
+                Transactions
+            </a>
+            <a class="item" href="#/profile"><i class="user outline icon  left"></i> Profile
+            </a>
+            <a class="item" href="javascript:App.Events.emit('user-logged-out')"><i class="cog icon left"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <div id="content">
+        <div id="navbar" class="ui inverted fixed main menu borderless navbar-grad">
+            <div class="ui fluid container center aligned">
+                <a href="#/" class="item" id="menu-toggle" style="z-index: 99999;">
+                    <i class="ui large bars icon"></i>
+                </a>
+                <p id="title-text">&nbsp;</p>
+                <!-- <div class="right item">
+                </div> -->
+                <div style="min-width:55px;text-align: center;padding-top: 2px;">
+                    <a href="javascript:App.Events.emit('add-button-clicked')" class="right item" id="right-plus-button" data-button-context="">
+                        <i class="ui large plus icon inverted"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div id="stage" style="top:50px;left:0px;">
+            <br>
+            <br>
+            <div class="ui segment center aligned middle aligned">
+                <h2 class="ui icon header">
+                    <div class="content">
+                        <div class="ui active centered inline loader"></div><br> Loading
+                        <div class="sub header">Content.</div>
+                    </div>
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div id="fullscreenElement">
+        <div id="fullscreen_stage">
+            <div class="container"></div>
+        </div>
+        <i class="fullscreen-close remove icon big inverted"></i>
+    </div>
+
+    <!-- ************* TEMPLATES USED IN APP ***********  -->
+    <template id="message-holder-template">
+        <div class="flexy-wrapper">
+            <div class="ui container">
+                <div class="ui segment center aligned middle aligned raised">
+                    <h2 class="ui icon header">
+                        <i class="{{icon_name}} icon animated fadeInUp"></i>
+                        <div class="content">
+                            <span class="animated fadeInUp _1">{{main_text}}</span>
+                            <div class="sub header animated fadeInUp _2">{{sub_text}}</div>
+                        </div>
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="menu-item-template" type="text/template">
+        <!-- <a class="item menu-head">News Categories<i class="list icon"></i></a> -->
+        {{#items}}
+        <a class="item navi-link" data-query-source="{{search_text}}">{{name}}</a>
+        {{/items}}
+    </template>
+
+    <template id="user-menu-item-template" type="text/template">
+        <a class="item menu-head">My News topics<i class="search icon"></i></a>
+        {{#items}}
+        <a class="item navi-link" data-query-source="{{search_text}}">{{name}}</a>
+        {{/items}}
+    </template>
+
+    <!-- standard js and css files -->
+    <script src='libs/jquery.min.js'></script>
+    <script src='libs/semantic.min.js'></script>
+    <script src='libs/path.min.js'></script>
+    <script src='libs/mustache.min.js'></script>
+    <script src="libs/nprogress.min.js"></script>
+    <script src='libs/lodash.min.js'></script>
+    <script src="libs/moment.min.js"></script>
+    <script src="libs/fastclick.min.js"></script>
+    <script src="libs/tabletop.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/6.5.0/firebase-app.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/6.5.0/firebase-auth.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/6.5.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.5.0/firebase-storage.js"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" type="text/javascript">
+    </script>
+    <!-- App js and css files -->
+    <script src="js/sidenav.min.js"></script>
+    <script src="js/app.js" type="text/javascript"></script>
+    <script src="js/routes.js" type="text/javascript"></script>
+    <script src="js/datasource.js" type="text/javascript"></script>
+    <script src="js/mobile.js" type="text/javascript"></script>
+
+    <!-- <script src="http://127.0.0.1:62574/appstore/landing.js" type="text/javascript"></script> -->
+
+
+    <!-- ENABLE THIS FOR MOBILE DEPLOYMENT -->
+    <script src="cordova.js" type="text/javascript"></script>
+
+    <script>
+        $(document).ready(function() {
+            App.init();
+
+            // Only when launched from mobile.html
+            App.isMobile = true;
+
+            App.sidenav = new Sidenav({
+                content: document.getElementById("content"),
+                sidenav: document.getElementById("sidenav"),
+                backdrop: document.getElementById("backdrop")
+            });
+
+            // FastClick.attach(document.body);
+            document.getElementById("menu-toggle").addEventListener("click", function() {
+                App.sidenav.open();
+            });
+
+            $(".side-menu-items .item").click(function() {
+                App.Events.emit("hide-side-nav");
+            });
+
+
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": false,
+                "progressBar": false,
+                "positionClass": "toast-bottom-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            }
+
+            // $.getScript(App.store_url + "settings.js", function (jd) {
+            //     debug(App.settings.version);
+            //     if (App.settings.version > 0) {
+            //         // Load Remote
+            //         $("#stage").load(App.store_url + "landing.html");
+            //         debug("Online mode");
+            //     } else {
+            //         App.Events.emit("show-welcome-screen");
+            //         debug("Offline mode");
+            //     }
+            // });
+            FastClick.attach(document.body);
+
+            App.Events.listen("show-profile-screen", function() {
+                debug("Loading profile screen");
+                window.location.href = "#/profile";
+            });
+
+        });
+    </script>
+</body>
+
+</html>

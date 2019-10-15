@@ -1,0 +1,237 @@
+<style>
+
+</style>
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+    <div class="ui two column stackable grid middle aligned container">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="heart teal icon"></i>
+                <div class="content">
+                    Approve Donations
+                    <div class="sub header">Approve donations from donors</div>
+                </div>
+            </h4>
+        </div>
+        <div class="column right aligned">
+            <div class="ui tiny button blue" id="approve-donations-approve-button" style="border-radius: 15px;"
+                id="create-item-button">
+                <i class="check icon"></i> Approve</div>
+            <div class="ui tiny button red" id="approve-donations-deny-button" style="border-radius: 15px;"
+                id="create-item-button">
+                <i class="delete icon"></i> Deny</div>
+        </div>
+    </div>
+    <div class="ui divider"></div>
+    <div class="ui container">
+        <div class="ui basic segment" id="approve-donations-item-list-table-holder">
+            <div class="ui active centered inline loader"></div>
+        </div>
+        <div class="ui tiny modal" id="approve-donations-approve-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Approve Donation(s)
+                </h3>
+                <br />
+                <div class="ui form" id="approve-donations-approve-form">
+                    <div class="field">
+                        <textarea rows="2" id="approve-donations-approve-comment"
+                            name="approve-donations-approve-comment" placeholder="Enter your comments"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="ui button blue" id="approve-donations-approve-submit-button">Approve</button>
+            </div>
+        </div>
+        <div class="ui tiny modal" id="approve-donations-deny-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Deny Donation(s)
+                </h3>
+                <br />
+                <div class="ui form" id="approve-donations-deny-form">
+                    <div class="field">
+                        <textarea rows="2" id="approve-donations-deny-comment" name="approve-donations-deny-comment"
+                            placeholder="Enter your comments"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="ui button blue" id="approve-donations-deny-submit-button">Deny</button>
+            </div>
+        </div>
+        <template id="approve-donations-item-list-table-template">
+            <table id="approve-donations-list-table" class="ui small table selectable teal celled" width="100%">
+                <thead>
+                    <th>select</th>
+                    <th>Category Name</th>
+                    <th>Amount/Qty</th>
+                    <th class="centered_td">Status</th>
+                    <th>Created Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- {{#items}} -->
+                    <tr class="approve-donations-row-item" data-approve-donation-row-id={{id}}>
+                        <td style="text-align: center">
+                            <div class="ui checkbox">
+                                <input type="checkbox" name="approve-item-checkbox" value={{id}}
+                                    data-approve-donation-checkbox-id={{id}} class="approve-item-checkbox-cls" />
+                                <label></label>
+                            </div>
+                        </td>
+                        <td>{{category}}</td>
+                        <td>{{donated_amount}}</td>
+                        <td class="centered_td">
+                            {{#isApproved}}
+                            <i class="ui check icon green"></i> Approved
+                            <!-- <label class="ui mini empty circular green label"></label> -->
+                            {{/isApproved}}
+                            {{^isApproved}}
+                            <i class="ui delete icon red"></i> Rejected
+                            <!-- <label class="ui mini empty circular red label"></label> -->
+                            {{/isApproved}}
+                        </td>
+                        <td>{{days_ago}}</td>
+                    </tr>
+                    <!-- {{/items}} -->
+                </tbody>
+            </table>
+        </template>
+    </div>
+</div>
+<script type="text/javascript">
+    App.TemplateController = {
+        data: [],
+        handleActions: function (action) {
+            alert("Fired");
+        },
+        bindListener: function () {
+            App.Events.listen("SEARCH_ACTIONS", this.handleActions);
+        },
+        render: function () {
+            var screen = App.Screens.get("screens/search.html");
+            $("#stage").html(screen);
+        }
+    };
+
+    $(function () {
+        let TABLE_NAME = "donations";
+        let all_donations = [];
+
+        function refreshTableView() {
+            var options = {
+                dom: '<"ui input"f><"ui segment"t><"right-aligned-panel"p>',
+                language: {
+                    //search : "<i class='fa fa-search'></i>",
+                    //info : "_TOTAL_ entries to show (_START_ to _END_)",
+                    info: "",
+                    paginate: {
+                        first: "first",
+                        previous: "<i class='fa fa-chevron-left'></i>",
+                        next: "<i class='fa fa-chevron-right'></i>",
+                        last: "last"
+                    }
+                }
+            };
+            $("#approve-donations-list-table").DataTable();
+            $(".dataTables_filter input").css("border", "none");
+            $(".dataTables_filter input").css("border-bottom", "1px dotted silver");
+            //$(".dataTables_filter input").css("border-radius","15px");
+            $(".dataTables_filter input").css("padding", "8px");
+            $(".dataTables_filter input").css("text-align", "center");
+        }
+
+        // Update UI to show the list
+        function renderDonationsItems() {
+            debug("Rendering approve donations items.. ");
+            App.db.collection(TABLE_NAME).get().then(snapshot => {
+                let changes = snapshot.docChanges();
+                all_donations = [];
+                changes.forEach(change => {
+                    var one_item = change.doc.data();
+                    one_item.id = change.doc.id;
+                    var dt = parseInt(one_item.created_at);
+                    // one_item.days_ago = moment(dt).format('DD MMMM, YYYY [at] HH:mm a');
+                    one_item.days_ago = moment(dt).fromNow();
+                    one_item.isApproved = (one_item.status == 'approved') ? true : false;
+                    all_donations.push(one_item);
+                });
+
+                App.Utils.loadTemplateToHolder(
+                    "#approve-donations-item-list-table-template",
+                    "#approve-donations-item-list-table-holder", {
+                    items: all_donations
+                }
+                );
+                refreshTableView();
+            });
+        }
+
+        // deny donations Modal
+        $("#approve-donations-deny-button").on("click", function () {
+            $("#approve-donations-deny-comment").val("");
+            $("#approve-donations-deny-modal").modal("show");
+        })
+
+        // approve donations Modal
+        $("#approve-donations-approve-button").on("click", function () {
+            $("#approve-donations-approve-comment").val("");
+            $("#approve-donations-approve-modal").modal("show");
+        })
+
+        // Approve selected donations
+        $("#approve-donations-approve-submit-button").on("click", function () {
+            const approve_comment_length = $("#approve-donations-approve-comment").val().trim().length
+            if (approve_comment_length < 10) {
+                toastr["error"]("Please enter comments. atleast 10 chars");
+                return;
+            }
+            const item_selected_count = $(".approve-item-checkbox-cls:checked").length
+            if (item_selected_count > 0) {
+                $(".approve-item-checkbox-cls:checked").each(function () {
+                    debug("updating each items");
+                    const itemId = $(this).val()
+                    updateEntry(TABLE_NAME, itemId, {
+                        status: 'approved'
+                    });
+                })
+                $("#approve-donations-approve-modal").modal("hide");
+                toastr["success"]("Donations approved successfully", "Success");
+            } else {
+                toastr["error"]("No donation(s) selected", "Error");
+            }
+        })
+
+        // Deny selected donations
+        $("#approve-donations-deny-submit-button").on("click", function () {
+            const deny_comment_length = $("#approve-donations-deny-comment").val().trim().length
+            if (deny_comment_length < 10) {
+                toastr["error"]("Please enter comments. atleast 10 chars");
+                return;
+            }
+
+            const item_selected_count = $(".approve-item-checkbox-cls:checked").length
+            if (item_selected_count > 0) {
+                $(".approve-item-checkbox-cls:checked").each(function () {
+                    debug("updating each items");
+                    const itemId = $(this).val()
+                    updateEntry(TABLE_NAME, itemId, {
+                        status: 'denied'
+                    });
+                })
+                $("#approve-donations-deny-modal").modal("hide");
+                toastr["success"]("Donations denied successfully", "Success");
+            } else {
+                toastr["error"]("No donation(s) selected", "Error");
+            }
+        })
+
+        renderDonationsItems();
+        App.db.collection(TABLE_NAME).onSnapshot(snapshot => {
+            renderDonationsItems();
+        });
+    });
+</script>

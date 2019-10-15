@@ -1,0 +1,8 @@
+animate.min.css
+jquery.min.js
+libs.txt
+lodash.min.js
+mustache.min.js
+path.min.js
+semantic.min.css
+semantic.min.js

@@ -1,0 +1,186 @@
+<style>
+    .category-row-item {
+        cursor: pointer;
+    }
+</style>
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+    <div class="ui two column stackable grid middle aligned container">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="list alternate outline blue icon"></i>
+                <div class="content">
+                    Category - Options
+                    <div class="sub header">Categories - Options List</div>
+                </div>
+            </h4>
+        </div>
+        <div class="column right aligned">
+            <div class="ui tiny button orange" style="border-radius: 15px;" id="create-category-option-button">
+                <i class="plus icon"></i>Add Option</div>
+        </div>
+    </div>
+
+    <div class="ui divider"></div>
+    <div class="ui container">
+        <div class="ui basic segment" id="category-option-item-list-table-holder">
+            <div class="ui active centered inline loader"></div>
+        </div>
+        <div class="ui tiny modal" id="category-option-item-edit-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Add Option
+                    <div class="sub header">Enter option details and click save.</div>
+                </h3>
+                <br />
+                <div class="ui form" id="donation-category-option-form">
+                    <div class="field">
+                        <div class="ui input left icon">
+                            <i class="edit blue icon"></i>
+                            <input type="text" name="name" id="category-option-name" placeholder="Enter option name" />
+                        </div>
+                    </div>
+                    <div class="field">
+                        <textarea rows="2" id="category-option-description" name="description"
+                            placeholder="Enter description"></textarea>
+                    </div>
+                    <div class="three fields" id="category-options-key-value-input-group">
+                        <div class="field">
+                            <label>Value</label>
+                            <input placeholder="Enter value" type="text">
+                        </div>
+                        <div class="field">
+                            <label>Display Text</label>
+                            <input placeholder="Enter text" type="text">
+                        </div>
+                        <div class="field">
+                            <label>&nbsp;</label>
+                            <button class="ui button icon red">
+                                <i class="close icon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <button class="ui button icon green" id="category-option-add-more-button">
+                            <i class="plus icon"></i>
+                        </button>
+                    </div>
+                    <input type="hidden" id="category-option-id" value="" />
+                </div>
+            </div>
+            <div class="actions">
+                <div>
+                    <button class="ui button blue" id="category-option-save-button">Save</button>
+                    <button class="ui button red" id="category-option-delete-button">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <template id="category-option-item-list-table-template">
+            <table id="category-option-list-table" class="ui small table selectable teal celled" width="100%">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Options</th>
+                        <th>Created Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- {{#items}} -->
+                    <tr class="category-option-row-item" data-category-option-id={{id}}>
+                        <td>{{name}}</td>
+                        <td>
+                            {{#options}}
+                            {{val}}<br />
+                            {{/options}}
+                        </td>
+                        <td>{{days_ago}}</td>
+                    </tr>
+                    <!-- {{/items}} -->
+                </tbody>
+            </table>
+        </template>
+
+        <template id="category-options-dynamic-input-group">
+            <div class="three fields">
+                <div class="field">
+                    <label>Value</label>
+                    <input placeholder="Enter value" type="text">
+                </div>
+                <div class="field">
+                    <label>Display Text</label>
+                    <input placeholder="Enter text" type="text">
+                </div>
+                <div class="field">
+                    <label>&nbsp;</label>
+                    <button class="ui button icon red">
+                        <i class="close icon"></i>
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <script type="text/javascript">
+        $(function () {
+
+            let TABLE_NAME = "donation_category_options";
+            let all_categories = [];
+            function refreshTableView() {
+                var options = {
+                    dom: '<"ui input"f><"ui segment"t><"right-aligned-panel"p>',
+                    language: {
+                        //search : "<i class='fa fa-search'></i>",
+                        //info : "_TOTAL_ entries to show (_START_ to _END_)",
+                        info: "",
+                        paginate: {
+                            first: "first",
+                            previous: "<i class='fa fa-chevron-left'></i>",
+                            next: "<i class='fa fa-chevron-right'></i>",
+                            last: "last"
+                        }
+                    }
+                };
+                $("#category-option-list-table").DataTable();
+                $(".dataTables_filter input").css("border", "none");
+                $(".dataTables_filter input").css("border-bottom", "1px dotted silver");
+                //$(".dataTables_filter input").css("border-radius","15px");
+                $(".dataTables_filter input").css("padding", "8px");
+                $(".dataTables_filter input").css("text-align", "center");
+            }
+
+            // Update UI to show the list
+            function renderCategoryOptionItems() {
+                debug("Rendering category option items.. ");
+                App.db.collection(TABLE_NAME).onSnapshot(snapshot => {
+                    let changes = snapshot.docChanges();
+                    all_categories = [];
+                    changes.forEach(change => {
+                        var one_item = change.doc.data();
+                        one_item.id = change.doc.id;
+                        var dt = parseInt(one_item.created_at);
+                        // one_item.days_ago = moment(dt).format('DD MMMM, YYYY [at] HH:mm a');
+                        one_item.days_ago = moment(dt).fromNow();
+                        all_categories.push(one_item);
+                    });
+
+                    App.Utils.loadTemplateToHolder(
+                        "#category-option-item-list-table-template",
+                        "#category-option-item-list-table-holder", {
+                        items: all_categories
+                    }
+                    );
+                    refreshTableView();
+                });
+            }
+
+            $("#create-category-option-button").click(function (e) {
+                App.donation_request_id = undefined;
+                window.location.href = "#/category_option_form";
+            });
+
+            App.db.collection(TABLE_NAME).onSnapshot(snapshot => {
+                renderCategoryOptionItems();
+            });
+        });
+    </script>

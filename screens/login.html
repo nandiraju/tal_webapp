@@ -1,0 +1,322 @@
+<style scoped>
+    .flex-grid {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        bottom: 0px;
+        right: 0px;
+        display: flex;
+        height: 100%;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 999999;
+        font-family: Lato;
+        background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1)), url(https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?ixlib=rb-1.2.1&auto=format&fit=crop&w=1446&q=80) no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+    }
+    
+    .col {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        font-family: Lato;
+    }
+    
+    .bg1 {
+        background: #222;
+        background: rgba(0, 0, 0, 0.5);
+    }
+    
+    .bg2 {
+        /* background: linear-gradient(90deg, #00d2ff 0%, #3a47d5 100%); */
+        background: rgba(255, 250, 255, 0.8);
+        /* background: #efefef; */
+    }
+    
+    .punch {
+        color: white;
+        font-weight: 100;
+        letter-spacing: 5px;
+    }
+    
+    .punch-text {
+        color: white;
+        font-weight: 300;
+        letter-spacing: 5px;
+        padding: 20px;
+    }
+    
+    .login-message {
+        color: black;
+        font-weight: 400;
+        letter-spacing: 2px;
+    }
+    
+    #emagia-logo {
+        position: absolute;
+        top: 0px;
+        left: 15px;
+        z-index: 9999999;
+    }
+    
+    #client-logo {
+        position: absolute;
+        top: 30px;
+        right: 10px;
+        z-index: 9999999;
+    }
+    
+    @media only screen and (max-width: 768px) {
+        .bg1 {
+            display: none;
+        }
+    }
+</style>
+<div class="flex-grid">
+    <div class="col bg1">
+        <div style="text-align:center;">
+            <img class="ui center image large" src="img/tal_logo.png" alt="">
+        </div>
+    </div>
+    <div class="col bg2">
+        <div class="ui middle aligned center aligned grid animated fadeIn" id="login-panel">
+            <div class="column" style="width:350px;">
+
+                <h2 class="ui icon header">
+                    <div class="content">
+                        Login
+                        <div class="sub header">Enter username and password to login</div>
+                    </div>
+                </h2>
+
+                <form class="ui large form">
+                    <div class="ui stacked segment">
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <i class="user icon"></i>
+                                <input type="text" id="email" placeholder="E-mail address">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <i class="lock icon"></i>
+                                <input type="password" id="password" placeholder="Password">
+                            </div>
+                        </div>
+                        <div id="login-button" class="ui fluid medium blue submit button">Login</div>
+                    </div>
+                    <div class="ui error message"></div>
+                </form>
+
+                <div class="ui">
+                    Forgot password?
+                    <a href="#">click here</a>
+                </div>
+
+                <div style="margin:10px;">
+                    New to TAL?
+                    <a href="javascript:void(0)" id="show-sign-up-button">click here</a> to sign-up
+                </div>
+            </div>
+        </div>
+
+        <div class="ui middle aligned center aligned grid animated bounceIn" id="sign-up-panel">
+            <div class="column" style="width:400px;">
+
+                <h2 class="ui icon header">
+                    <div class="content">
+                        Sign Up to Touch a Life
+                        <div class="sub header">Enter your details</div>
+                    </div>
+                </h2>
+
+                <form class="ui large form">
+                    <div class="ui stacked segment padded">
+
+                        <div class="two fields">
+                            <div class="field">
+                                <div class="ui left icon input">
+                                    <i class="user outline icon"></i>
+                                    <input type="text" name="firstname" placeholder="First Name">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="ui left icon input">
+                                    <i class="user blue outline icon"></i>
+                                    <input type="text" name="lastname" placeholder="Last Name">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <i class="mail green icon"></i>
+                                <input type="text" name="email" placeholder="E-mail address">
+                            </div>
+                        </div>
+
+                        <div class="two fields">
+                            <div class="field">
+                                <div class="ui left icon input">
+                                    <i class="lock red icon"></i>
+                                    <input type="password" name="password" placeholder="Password">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="ui left icon input">
+                                    <i class="lock red icon"></i>
+                                    <input type="password" name="confirm_password" placeholder="confirm_password">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ui fluid large teal submit button" id="signup-button">Sign up</div>
+                    </div>
+
+                    <div class="ui error message"></div>
+
+                </form>
+
+                <div class="ui">
+                    Already have account?
+                    <a href="javasccript:void(0)" id="show-login-button">click here</a> to sign in.
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script type="text/javascript" charset="utf-8">
+    function isEmail(email) {
+        var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+        return regex.test(email);
+    }
+
+    function objectifyForm(formArray) { //serialize data function
+        var returnArray = {};
+        for (var i = 0; i < formArray.length; i++) {
+            returnArray[formArray[i]['name']] = formArray[i]['value'];
+        }
+        return returnArray;
+    }
+
+    function handleLogin() {
+
+        $("#login-button").click(function(e) {
+            debug(" login button clicked.. ");
+            $(this).addClass('loading');
+            e.preventDefault();
+            var email = $("#email").val();
+            var password = $("#password").val();
+            // App.auth.signInWithEmailAndPassword(email, password)
+            //     .catch(function(err) {
+            //     });
+
+            App.auth.signInWithEmailAndPassword(email, password)
+                .then(function(firebaseUser) {
+                    debug("Login --" + firebaseUser);
+                })
+                .catch(function(error) {
+                    debug(error.code + "\n" + error.message);
+                    $("#login-button").removeClass('loading');
+                    //$("#email").val("");
+                    $("#password").val("");
+                    toastr["error"]("Invalid credentails. Please try again.", "Error"); // Error Handling
+                });
+
+        });
+
+    }
+
+    function handleSignUp() {
+        $("#signup-button").click(function(e) {
+            $(this).addClass('loading');
+            e.preventDefault();
+            var new_user = objectifyForm($("form").serializeArray());
+            if (isEmail(new_user.email)) {
+                debug("valid email " + new_user.email);
+                if (!new_user.firstname) {
+                    $("#signup-button").removeClass("loading");
+                    toastr["error"]("Enter first name", "Error");
+                    return;
+                }
+                if (!new_user.password) {
+                    $("#signup-button").removeClass("loading");
+                    toastr["error"]("Enter a valid password.", "Error");
+                    return;
+                }
+                if (new_user.password != new_user.confirm_password) {
+                    $("#signup-button").removeClass("loading");
+                    toastr["error"]("Passwords dont seem to match. Please review.", "Error");
+                    return;
+                }
+                // debug(new_user);
+
+                App.auth.createUserWithEmailAndPassword(new_user.email, new_user.password).then(
+                    function(user) {
+                        //App.User = user;
+                        debug(" signup call back ===> " + user.user.uid);
+                        createEntry("user_profile", {
+                            user_id: user.user.uid,
+                            first_name: new_user.firstname,
+                            last_name: new_user.lastname,
+                            email: new_user.email,
+                            role: ['donor', 'donee'],
+                            profile_complete: 0,
+                            account_status: 'active'
+                        });
+                        $("#user-name-in-header").html("Welcome " + new_user.firstname)
+                        App.Events.emit("user-logged-in", user);
+                    },
+                    function(error) {
+                        // Handle Errors here.
+                        var errorCode = error.code;
+                        var errorMessage = error.message;
+                        $("#signup-button").removeClass("loading");
+                        toastr["error"]("Error creating account.\n" + error.message, "Error");
+                    });
+
+            } else {
+                $("#signup-button").removeClass("loading");
+                toastr["error"]("Enter a valid email " + new_user.email, "Error");
+            }
+        });
+    }
+
+    $(function() {
+        $(".fullscreen-close").hide();
+
+        function showLogin() {
+            $("#sign-up-panel").hide();
+            $("#login-panel").show();
+        }
+
+        function showSignup() {
+            $("#sign-up-panel").show();
+            $("#login-panel").hide();
+        }
+
+        $("#show-login-button").click(function() {
+            showLogin();
+        });
+
+        $("#show-sign-up-button").click(function() {
+            showSignup();
+        });
+
+        showLogin(); // Runs first  time when page is loaded to show login panel over signup panel.
+        handleLogin(); // handles login events.
+        handleSignUp(); // handles new account signups.
+    });
+</script>

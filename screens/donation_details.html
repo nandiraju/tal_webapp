@@ -1,0 +1,269 @@
+<style>
+    .donation-container {
+        padding: 60px 30px;
+    }
+
+    .relaxed.padding {
+        padding: 30px;
+    }
+
+    .donation-form {
+        margin: 2em !important;
+        /* margin: auto; */
+    }
+
+    .donation-card-style {
+        border-radius: 5px !important;
+        box-shadow: 0px 4px 30px rgba(0, 0, 0, 0.5) !important;
+        text-align: center !important;
+    }
+</style>
+
+<div class="screen-wrapper">
+    <br>
+    <div class="ui centered card donation-card-style">
+        <div class="image">
+            <img src="" alt="" id="donation-image">
+        </div>
+
+        <div class="content">
+            <div class="header" id="donee-title">
+            </div>
+            <div class="title" id="donee-category-type">
+            </div>
+            <div class="meta" id="days-ago">
+                {{days_ago}}
+            </div>
+            <div class="description" id="donee-description">
+                {{ description }}
+                <div class="ui divider"></div>
+                <div style="text-align: center;margin: auto;">
+                    <div class="ui tiny center aligned inverted blue button donate-data-item-button rounded-button"
+                        data-item-id="{{ id }}">Donate Now
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="extra content">
+            <h2 class="ui header">
+                <div class="content">
+                    <span id="donation-display"></span>
+                    <div class="sub header">Total Requested</div>
+                </div>
+            </h2>
+        </div>
+
+    </div>
+    <br>
+    <div class=" donation-form animated zoomIn">
+        <div class="ui form" id="amount-form" style="background:#f5f5f5;">
+            <div class="two fields">
+                <div class="field">
+                    <label style="width: 30%">Amount</label>
+                    <div class="ui input left icon">
+                        <i class="dollar blue icon"></i>
+                        <input type="text" id="don-amt" name="donation-amount" placeholder="Enter amount">
+                    </div>
+                </div>
+                <div class="field" id="donation-qty">
+                    <label style="width: 30%">Quantity</label>
+                    <div class="ui input left icon">
+                        <i class="list blue icon"></i>
+                        <input type="text" id="don-qty" name="donation-qty" placeholder="Enter quantity" value="1">
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label style="width: 30%">Notes</label>
+                <textarea rows="2" id="description" name="description" placeholder="Enter comments (if any)"></textarea>
+            </div>
+            <div class="ui bottom attached button green" id="btn-process-paypal">
+                Donate
+            </div>
+        </div>
+    </div>
+    <br>
+</div>
+
+<!-- <div class="ui segment donation-container">
+  <div class="ui two column very relaxed grid padding">
+    <div class="column">
+      <div class="ui items">
+        <div class="item">
+          <a class="ui small image">
+            <img src="https://semantic-ui.com/images/wireframe/image.png">
+          </a>
+          <div class="content">
+            <div class="header" id="donee-title"></div>
+            <div class="description" id="donee-description">
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="column">
+      <div class="ui items">
+        <div class="item">
+          <div class="content">
+            <div class="header amount" id="req-amt">Requested Amount: $<span id="donee-amount"></span></div>
+            <div class="header amount" id="req-cat"><span id="donee-cat-type"></span> - <span id="donee-cat-qty"></span>
+              x $35</div>
+            <div class="description">
+              <div class="ui form" id="amount-form">
+                <div class="inline fields">
+                  <div class="sixteen wide field" id="amount-section">
+                    <label style="width: 30%">Donation Amount</label>
+                    <input type="text" id="don-amt" name="donation-amount" placeholder="Enter amount">
+                  </div>
+                </div>
+                <div class="inline fields" id="category-section">
+                  <div class="sixteen wide field">
+                    <label style="width: 30%">Donation Quantity</label>
+                    <input type="text" id="don-qty" name="donation-qty" placeholder="Enter quantity">
+                  </div>
+                </div>
+                <div class="field">
+                  <label style="width: 30%">Donation Notes</label>
+                  <textarea rows="2" id="description" name="description"
+                    placeholder="Enter comments (if any)"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ui bottom attached button green" id="btn-process-paypal">
+          Donate
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ui vertical divider">
+    <i class="heart icon"></i>
+  </div>
+</div> -->
+
+<script type="text/javascript">
+    $(function () {
+        var selected_donation_request = _.find(App.donation_requests, {
+            id: App.donation_request_id
+        });
+        // debug(selected_donation_request);
+        if (selected_donation_request) {
+            $("#donee-title").text(selected_donation_request.title)
+            $("#donee-category-type").html(selected_donation_request.category)
+            $("#days-ago").html(selected_donation_request.days_ago)
+            $("#donation-image").attr("src", selected_donation_request.image_url)
+            $("#donee-description").text(selected_donation_request.description)
+            $("#donation-display").text("$ " + parseFloat(selected_donation_request
+                    .requested_amount)
+                .toFixed(2));
+            if (selected_donation_request.category === 'Homeless') {
+                $("#amount-section").hide()
+                $("#req-amt").hide()
+                $("#donee-cat-type").text(selected_donation_request.category_type)
+                $("#donee-cat-qty").text(selected_donation_request.category_qty)
+            } else {
+                $("#donee-amount").text(selected_donation_request.requested_amount)
+                $("#req-cat").hide()
+                $("#category-section").hide()
+                $("#donation-qty").hide()
+            }
+        }
+
+        $('#amount-form')
+            .form({
+                on: 'blur',
+                inline: true,
+                fields: {
+                    donationAmount: {
+                        identifier: 'donation-amount',
+                        rules: [{
+                            type: 'maxCount[selected_donation_request.requested_amount]',
+                            prompt: function (value) {
+                                if (parseInt($("#don-amt").val()) > parseInt(
+                                        selected_donation_request
+                                        .requested_amount)) {
+                                    return 'Please enter <= ' + selected_donation_request
+                                        .requested_amount;
+                                }
+                            }
+                        }]
+                    },
+                    donationQty: {
+                        identifier: 'donation-qty',
+                        rules: [{
+                            type: 'maxCount[selected_donation_request.category_qty]',
+                            prompt: function (value) {
+                                if (parseInt($("#don-qty").val()) > parseInt(
+                                        selected_donation_request
+                                        .category_qty)) {
+                                    return 'Please enter <= ' + selected_donation_request
+                                        .category_qty;
+                                }
+                            }
+                        }]
+                    }
+                }
+            });
+
+        function validatePaymentDetails() {
+            $('#amount-form')
+                .form({
+                    on: 'blur',
+                    inline: true,
+                    fields: {
+                        donationAmount: {
+                            identifier: 'donation-amount',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please fill the field'
+                            }]
+                        },
+                        donationQty: {
+                            identifier: 'donation-qty',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please fill the field'
+                            }]
+                        }
+                    }
+                });
+        }
+
+        $("#btn-process-paypal").click(function (e) {
+            //alert('Processing to Paypal')
+            validatePaymentDetails();
+            e.preventDefault()
+
+            var one_donation = {
+                qty: $("#don-qty").val() == undefined ? 1 : $("#don-qty").val(),
+                price: $("#don-amt").val(),
+                notes: $('#description').val(),
+                request_id: App.donation_request_id,
+                user_id: App.User.uid
+            }
+            //debug(jQuery.param(one_donation));
+            //var pay_url = "payment.html?" + jQuery.param(one_donation);
+            var pay_url = "https://srikanthnandiraju.github.io/appstore/touchalife/donate.html?" +
+                jQuery.param(one_donation);
+            window.open(pay_url, "_system");
+
+            // pay_url = "http://127.0.0.1:5500/payment.html?" +
+            //     jQuery.param(one_donation);
+            window.open(pay_url, "_system");
+
+        });
+
+        $("#don-qty").on("keyup", function (e) {
+            $("#btn-process-paypal").html("Donate $" + Number(35 * $(this).val()));
+        });
+
+        $("#don-amt").on("keyup", function (e) {
+            $("#btn-process-paypal").html("Donate $" + Number($(this).val()));
+        });
+
+    });
+</script>

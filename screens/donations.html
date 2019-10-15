@@ -1,0 +1,281 @@
+<style>
+    .delete-button,
+    .edit-button {
+        cursor: pointer;
+    }
+
+    .request-card-style {
+        /* background: #fafafa !important;
+     box-shadow: none !important;
+     border: 1px solid #dcdcdc !important; */
+        margin: auto !important;
+        margin-left: 5px !important;
+        /* margin-bottom: 25px !important; */
+        border-radius: 8px !important;
+        box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.12) !important;
+        /* max-width: 400px !important; */
+        cursor: pointer;
+    }
+
+    .rounded-button {
+        border-radius: 15px !important;
+    }
+</style>
+
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+    <div class="ui two column stackable grid middle aligned container remove-on-mobile">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="tasks teal icon"></i>
+                <div class="content">
+                    Donations
+                    <div class="sub header">Make Donations</div>
+                </div>
+            </h4>
+        </div>
+        <div class="column right aligned">
+            <div class="ui tiny button orange my-donations-item-button" style="border-radius: 15px;"
+                id="my-donations-item-button">
+                <i class="gift icon"></i> My Donations
+            </div>
+            <div class="ui tiny button green make-donations-item-button" style="border-radius: 15px; display: none;"
+                id="make-donations-item-button">
+                <i class="th list icon"></i> Make Donations
+            </div>
+        </div>
+    </div>
+    <div class="ui divider remove-on-mobile"></div>
+    <br>
+    <h2 class="no-data" style="text-align:center; width: 100%"></h2>
+    <div class="ui three column container doubling stackable masonry grid" id="donations-item-list-screen-holder">
+        <div class="ui active centered inline loader"></div>
+    </div>
+</div>
+
+<template id="donations-item-list-template">
+    {{#items}}
+    <div class="column">
+        <div class="ui fluid card request-card-style">
+
+            <div class="image">
+                {{#image_url}}
+                <img src="{{image_url}}">
+                {{/image_url}}
+                {{^image_url}}
+                <img
+                    src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=450&q=80">
+                {{/image_url}}
+            </div>
+
+            <div class="content">
+
+                <div class="header">
+                    {{ title }}
+                </div>
+                <div class="title">
+                    {{category}}
+                </div>
+                <div class="meta">
+                    {{days_ago}}
+                </div>
+                <div class="description">
+                    {{ description }}
+                    <div class="ui divider"></div>
+                    <div class="ui indicating progress request-progress-status" data-value="{{ donated_amount }}"
+                        data-total="{{ requested_amount }}" style="border-radius: 0 !important;">
+                        <div class="bar">
+                            <div class="progress"></div>
+                        </div>
+                        <div class="label"></div>
+                    </div>
+                    <div class="ui divider"></div>
+                    <div style="text-align: center;margin: auto;" class="content-donate-button-block">
+                        <div class="ui tiny center aligned inverted blue button donate-data-item-button rounded-button"
+                            data-item-id="{{ id }}">Donate Now
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <!-- <div class="content">
+                <span class="ui blue right ribbon label">$5000.00</span>
+            </div> -->
+
+            <!-- <span class="right floated star edit-button">
+                    <i class="edit icon"></i>
+                    Donate Now
+                </span> -->
+        </div>
+    </div>
+    {{/items}}
+</template>
+
+<template id="my-donations-item-list-template">
+    {{#items}}
+    <div class="column">
+        <div class="ui fluid card request-card-style">
+            <div class="content">
+                <!-- <span class="ui mini blue tag label right floated">$5000.00</span> -->
+                <div class="header">
+                    {{user_name}} Donated ${{donated_amount}} for {{category}}
+                </div>
+                <div class="description">
+                    {{donation_notes}}
+                </div>
+                <div class="meta">
+                    {{days_ago}}
+                </div>
+                <div class="description">
+                    {{ description }}
+                </div>
+            </div>
+            <div class="image">
+
+            </div>
+        </div>
+    </div>
+    {{/items}}
+</template>
+
+<script type="text/javascript">
+    $(function () {
+
+        if (App.isMobile) {
+            $("#title-text").html("Donations");
+            $(".remove-on-mobile").remove();
+            $("#right-plus-button").hide();
+            $("#right-plus-button").attr("data-button-context", "");
+        }
+
+        // hide My Donations button for Admin
+        const current_user_roles = get_current_user_roles();
+        var isAdmin = false;
+        if (current_user_roles.includes('admin') || current_user_roles.includes('tal_admin')) {
+            isAdmin = true;
+
+            // review this code
+            //$("#my-donations-item-button").hide();
+
+        }
+
+        App.donation_requests = [];
+        // Update UI to show the list
+        function renderItems() {
+            $(".no-data").hide();
+            $("#make-donations-item-button").hide();
+            if (!isAdmin) {
+                $("#my-donations-item-button").show();
+            }
+
+            let TABLE_NAME = "donation_requests";
+            let get_requests_qry = App.db.collection(TABLE_NAME);
+            const current_user_roles = get_current_user_roles();
+            get_requests_qry.where('status', '==', 'approved').get().then(snapshot => {
+                let changes = snapshot.docChanges();
+                App.donation_requests = [];
+                changes.forEach(change => {
+                    var one_item = change.doc.data();
+                    one_item.id = change.doc.id;
+                    var dt = parseInt(one_item.created_at);
+                    one_item.days_ago = moment(dt).fromNow();
+                    App.donation_requests.push(one_item);
+                });
+
+                App.Utils.loadTemplateToHolder(
+                    "#donations-item-list-template",
+                    "#donations-item-list-screen-holder", {
+                        items: App.donation_requests
+                    }
+                );
+
+                //progress status for each request
+                $('.request-progress-status').progress({
+                    text: {
+                        active: '${value} of ${total} donated'
+                    }
+                });
+
+                // if admin, hide donate button
+                if (isAdmin) {
+                    $(".content-donate-button-block").hide();
+                }
+
+                if (App.donation_requests.length === 0) {
+                    $(".no-data").show().html("No donations available")
+                }
+            });
+        }
+
+        function renderDonationItems() {
+            $(".no-data").hide();
+            let TABLE_NAME = "donations"
+            let get_donations_qry = App.db.collection(TABLE_NAME);
+
+            $("#my-donations-item-button").hide();
+            if (isAdmin) {
+                // if admin
+                $("#make-donations-item-button").hide();
+            } else {
+                $("#make-donations-item-button").show();
+                get_donations_qry = get_donations_qry.where('user_id', '==', App.User.uid);
+            }
+
+            get_donations_qry.get().then(snapshot => {
+                let changes = snapshot.docChanges();
+                App.donations = [];
+                changes.forEach(change => {
+                    var one_item = change.doc.data();
+                    one_item.id = change.doc.id;
+                    var dt = parseInt(one_item.created_at);
+                    one_item.days_ago = moment(dt).fromNow();
+
+                    if (!isAdmin) {
+                        one_item.user_name = '';
+                    }
+
+                    App.donations.push(one_item);
+                });
+
+                App.Utils.loadTemplateToHolder(
+                    "#my-donations-item-list-template",
+                    "#donations-item-list-screen-holder", {
+                        items: App.donations
+                    }
+                );
+
+                if (App.donations.length === 0) {
+                    $(".no-data").show().html("No donations available")
+                }
+            });
+        }
+
+        $("body").on("click", ".donate-data-item-button", function (e) {
+            let id = $(this).attr("data-item-id");
+            App.donation_request_id = id;
+            showPage("#/donation_details");
+            e.stopImmediatePropagation();
+        });
+
+        $("body").on("click", ".make-donations-item-button", function (e) {
+            renderItems();
+            e.stopImmediatePropagation();
+        });
+
+        $("#my-donations-item-button").click(function (e) {
+            $("#donations-item-list-screen-holder").html(
+                '<div class="ui active centered inline loader"></div>')
+            renderDonationItems();
+        });
+
+        $("body").on("click", ".edit-button", function () {
+            let id = $(this).attr("data-item-id");
+            App.donation_request_id = id;
+            showPage("#/request_form");
+        });
+
+        // Show items on first run
+        renderItems()
+    });
+</script>

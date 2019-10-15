@@ -1,0 +1,260 @@
+<style>
+    .delete-button,
+    .edit-button {
+        cursor: pointer;
+    }
+
+    .request-card-style {
+        /* background: #fafafa !important;
+        box-shadow: none !important;
+        border: 1px solid #dcdcdc !important; */
+        margin: auto !important;
+        margin-left: 5px !important;
+        /* margin-bottom: 25px !important; */
+        border-radius: 8px !important;
+        box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.12) !important;
+        /* max-width: 400px !important; */
+        cursor: pointer;
+    }
+</style>
+
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+    <div class="ui two column stackable grid middle aligned container remove-on-mobile">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="tasks teal icon"></i>
+                <div class="content">
+                    Requests
+                    <div class="sub header">Create Donations Requests</div>
+                </div>
+            </h4>
+        </div>
+        <div class="column right aligned">
+            <div class="ui tiny button orange" style="border-radius: 15px;" id="create-requests-item-button">
+                <i class="plus icon"></i> New Request
+            </div>
+        </div>
+    </div>
+    <div class="ui divider remove-on-mobile"></div>
+    <br>
+    <div class="ui three column container doubling stackable masonry grid" id="requests-item-list-screen-holder">
+        <div class="ui active centered inline loader"></div>
+    </div>
+    <h2 class="no-data" style="text-align:center"></h2>
+</div>
+
+<div class="ui tiny modal" id="requests-item-edit-modal">
+    <i class="close icon"></i>
+
+    <div class="content global-modal-content">
+        <h3 class="ui teal header center aligned">
+            Donation Requests.
+            <div class="sub header">Enter donation request details and click save.</div>
+        </h3>
+        <br />
+        <div class="ui form" id="event-form">
+            <div class="field">
+                <select class="ui dropdown" name="catName" id="item-dropdown-list" name="category">
+                    <option value="">Select category</option>
+                    <option value="item_1">Item 1</option>
+                    <option value="item_2">Item 2</option>
+                </select>
+            </div>
+            <div class="field">
+                <div class="ui input left icon">
+                    <i class="edit blue icon"></i>
+                    <input type="text" id="event-name" name="eventName" placeholder="Enter event name" />
+                </div>
+            </div>
+
+            <div class="two fields">
+                <div class="field">
+                    <div class="ui left icon input">
+                        <i class="calendar outline icon green"></i>
+                        <input type="date" id="event-start-date" name="startDate"
+                            placeholder="Start Date as mm/dd/yyyy" />
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui left icon input">
+                        <i class="calendar outline icon red"></i>
+                        <input type="date" id="event-end-date" name="endDate" placeholder="End Date as mm/dd/yyyy" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <textarea rows="2" id="event-description" name="description"
+                    placeholder="Enter event description"></textarea>
+            </div>
+
+            <div class="field">
+                <div class="ui input left icon">
+                    <i class="marker icon red"></i>
+                    <input type="text" id="event-location" name="location" placeholder="Event location" />
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="ui input left icon">
+                    <i class="chain icon purple"></i>
+                    <input type="text" id="event-link" name="link" placeholder="Event link" />
+                </div>
+            </div>
+            <input type="hidden" id="event-id" value="" />
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="ui button blue" id="requests-save-button">Save</button>
+    </div>
+</div>
+<template id="requests-item-list-template">
+    {{#items}}
+    <div class="column">
+        <div class="ui fluid card request-card-style">
+            <div class="image">
+                {{#image_url}}
+                <img src="{{image_url}}">
+                {{/image_url}}
+                {{^image_url}}
+                <img
+                    src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=450&q=80">
+                {{/image_url}}
+            </div>
+            <div class=" content">
+                <!-- <span class="ui mini blue tag label right floated">$5000.00</span> -->
+                <div class="header">
+                    {{ title }}
+                </div>
+                <div class="title">
+                    {{category}}
+                </div>
+                <div class="meta">
+                    {{days_ago}}
+                </div>
+                <div class="description ellipsis">
+                    {{ description }}
+                </div>
+            </div>
+            <div class="content">
+                <div class="ui indicating progress request-progress-status" data-value="{{ donated_amount }}"
+                    data-total="{{ requested_amount }}">
+                    <div class="bar">
+                        <div class="progress"></div>
+                    </div>
+                    <div class="label"></div>
+                </div>
+            </div>
+            <!-- <div class="image">
+
+            </div> -->
+            <div class="extra content">
+                <span class="left floated">
+                    <i class="{{status_icon}} {{ status_color }} icon"></i>
+                    {{ status }}
+                </span>
+                <span class="right floated star edit-button" data-item-id="{{ id }}">
+                    <i class="edit icon"></i>
+                    Edit
+                </span>
+            </div>
+        </div>
+    </div>
+    {{/items}}
+</template>
+
+<script type="text/javascript">
+    $(function() {
+        if (App.isMobile) {
+            $("#title-text").html("Requests");
+            $(".remove-on-mobile").remove();
+            $("#right-plus-button").show();
+            $("#right-plus-button").attr("data-button-context", "new-request");
+        }
+
+        let TABLE_NAME = "donation_requests";
+        App.donation_requests = [];
+
+        // Update UI to show the list
+        function renderItems() {
+            let get_requests_qry = App.db.collection(TABLE_NAME);
+            const current_user_roles = get_current_user_roles();
+
+            if (current_user_roles.includes('admin') || current_user_roles.includes('tal_admin')) {
+                // if admin
+                $("#create-requests-item-button").hide();
+            } else {
+                if (App.User) {
+                    get_requests_qry = get_requests_qry.where('user_id', '==', App.User.uid);
+                }
+            }
+            get_requests_qry.get().then(snapshot => {
+                let changes = snapshot.docChanges();
+                App.donation_requests = [];
+                changes.forEach(change => {
+                    var one_item = change.doc.data();
+                    one_item.id = change.doc.id;
+                    var dt = parseInt(one_item.created_at);
+                    // one_item.days_ago = moment(dt).format('DD MMMM, YYYY [at] HH:mm a');
+                    if (one_item.status === 'in process') {
+                        one_item.status_color = "orange";
+                        one_item.status_icon = "exclamation circle"
+                    } else if (one_item.status === 'approved') {
+                        one_item.status_color = "green";
+                        one_item.status_icon = "check"
+                    } else {
+                        one_item.status_color = "red";
+                        one_item.status_icon = "x icon"
+                    }
+                    one_item.days_ago = moment(dt).fromNow();
+                    App.donation_requests.push(one_item);
+                });
+
+                App.Utils.loadTemplateToHolder(
+                    "#requests-item-list-template",
+                    "#requests-item-list-screen-holder", {
+                    items: App.donation_requests
+                }
+                );
+
+                //progress status for each request
+                $('.request-progress-status').progress({
+                    text: {
+                        active: '${value} of ${total} donated'
+                    }
+                });
+
+                if (App.donation_requests.length === 0) {
+                    $(".no-data").html("No requests available")
+                }
+            });
+        }
+
+
+        // Right button on mobile mapped to new entry
+        App.Events.listen("add-button-clicked", function() {
+            let btn_context = $("#right-plus-button").attr("data-button-context");
+            if (btn_context && btn_context == "new-request") {
+                App.donation_request_id = undefined;
+                window.location.href = "#/request_form";
+            }
+        });
+
+        $("#create-requests-item-button").click(function(e) {
+            App.donation_request_id = undefined;
+            window.location.href = "#/request_form";
+        });
+
+        $("body").on("click", ".edit-button", function() {
+            let id = $(this).attr("data-item-id");
+            App.donation_request_id = id;
+            showPage("#/request_form");
+        });
+
+        // Show items on first run
+        App.db.collection(TABLE_NAME).onSnapshot(snapshot => {
+            renderItems();
+        });
+    });
+</script>

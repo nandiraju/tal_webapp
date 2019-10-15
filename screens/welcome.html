@@ -1,0 +1,73 @@
+<style>
+    .dte {
+        color: silver;
+        font-size: .8em;
+    }
+</style>
+<div class="screen-wrapper" style="padding-right:0px;margin-top:0px;">
+    <div class="ui basic center aligned segment banner-image animated fadeInDown" style="background:#003366">
+        <img class=" ui centered  image" src="img/talevent.jpeg" alt="">
+    </div>
+    <div class="ui container center aligned animated fadeInUp">
+        <h4 class="ui center aligned header">
+            Touch-A-Life Foundation facilitates one-to-one connections between donors and recipients by leveraging technologies to disrupt the digital divide and connect those willing to give with those in need.
+        </h4>
+        <div class="ui divider"></div>
+        <br>
+        <div class="ui blue button" style="border-radius:20px;" onclick="javascript:window.open('https://touchalife.org/register-now/');">Register for the event</div>
+    </div>
+    <div class="ui basic center aligned segment animated zoomInUp">
+        <i class="icon clock big red center aligned outline animated pulse infinite"></i>
+        <h2 class="ui center aligned red header" style="font-family:courier;" id="demo"></h2>
+    </div>
+
+</div>
+<script type="text/javascript">
+    var countDownFunction = undefined;
+
+    $(function() {
+
+        if (App.isMobile || isSmallScreen()) {
+            $("#title-text").html("TAL Event");
+            $("#right-plus-button").hide();
+            $("#right-plus-button").attr("data-button-context", "");
+            $(".banner-image").css('background', "#003366");
+        } else {
+            $(".banner-image").css('background', "none");
+        }
+
+
+        var countDownDate = new Date("Nov 15, 2019 9:00:00").getTime();
+
+        countDownFunction = setInterval(function() {
+            var now = new Date().getTime();
+            var distance = countDownDate - now;
+            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            if (document.getElementById("demo") == undefined) {
+                debug("No div to set counter. Clearing..");
+                clearInterval(countDownFunction);
+                return;
+            }
+
+            document.getElementById("demo").innerHTML =
+                days +
+                "<span class='dte'>d</span> " +
+                hours +
+                "<span class='dte'>h</span> " +
+                minutes +
+                "<span class='dte'>m</span> " +
+                seconds +
+                "<span class='dte'>s</span>";
+
+            if (distance < 0) {
+                clearInterval(countDownFunction);
+                document.getElementById("demo").innerHTML = "Event Started";
+            }
+        }, 1000);
+
+    });
+</script>

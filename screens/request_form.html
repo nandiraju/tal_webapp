@@ -1,0 +1,416 @@
+<style>
+    .request_form_segmentx {
+        width: 500px;
+        margin: auto !important;
+        border: 1px solid silver;
+    }
+    
+    .ui.form .field>.uploads {
+        display: inline-block;
+    }
+</style>
+
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+    <div class="ui two column stackable grid middle aligned container remove-on-mobile">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="tasks teal icon"></i>
+                <div class="content">
+                    <span class="create-req">Create Request</span>
+                    <div class="sub header">Enter request details</div>
+                </div>
+            </h4>
+        </div>
+
+    </div>
+    <div class="ui divider remove-on-mobile"></div>
+
+    <div class="ui container">
+        <div class="ui center aligned middle aligned basic segment request_form_segment">
+            <div class="ui form" id="event-form" style="background:#f5f5f5;padding:20px;">
+                <div class="field">
+                    <div class="ui input left icon">
+                        <i class="edit blue icon"></i>
+                        <input type="text" id="title" name="title" placeholder="Enter title for your requirement" />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <textarea rows="2" id="event-description" name="description" placeholder="Enter event description"></textarea>
+                </div>
+
+                <div class="field">
+                    <select class="ui dropdown category" name="category" id="category">
+                        <option value="">Select category</option>
+                        <option value="Homeless">Homeless</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Education">Education</option>
+                    </select>
+                </div>
+                <div class="three fields" id="type-homeless">
+                    <div class="field">
+                        <select class="ui dropdown category-type" name="catType" id="cat-type">
+                            <option value="">Select category type</option>
+                            <option value="Shirts">Shirts</option>
+                            <option value="Pants">Pants</option>
+                            <option value="Shoes">Shoes</option>
+                            <option value="Socks">Socks</option>
+                            <option value="Hoodies">Hoodies</option>
+                            <option value="Blankets">Blankets</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <select class="ui dropdown category-size" name="catSize" id="cat-size">
+                            <option value="">Select category size</option>
+                            <option value="XS">XS (Extra Small)</option>
+                            <option value="S">S (Small)</option>
+                            <option value="M">M (Medium)</option>
+                            <option value="L">L (Large)</option>
+                            <option value="XL">XL (Extra Large)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <input type="text" id="cat-quantity" name="quantity" placeholder="Enter Quantity" />
+                    </div>
+                </div>
+
+                <div class="two fields" id="type-education">
+                    <div class="field">
+                        <select class="ui dropdown education-type" name="edu-type" id="edu-type">
+                            <option value="">Select Type</option>
+                            <option value="Tuition Fees">Tuition Fees</option>
+                            <option value="Tutoring">Tutoring</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <div class="ui input left icon fluid">
+                            <i class="dollar sign icon"></i>
+                            <input type="text" id="education-amount" placeholder="Enter required amount">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two fields" id="type-medical">
+                    <div class="field">
+                        <select class="ui dropdown medical-type" name="medical" id="medicals">
+                            <option value="">Select Type</option>
+                            <option value="type1diabetes">Type1 Diabetes</option>
+                            <option value="type2diabetes">Type2 Diabetes</option>
+                            <option value="type3diabetes">Type3 Diabetes</option>
+                            <option value="disabilities">Children With Disabilities</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <div class="ui input left icon fluid">
+                            <i class="dollar sign icon"></i>
+                            <input type="text" id="medical-amount" placeholder="Enter required amount">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field" id="imageUpload">
+                    <input type="file" class="inputfile" id="image-upload-button" />
+                    <label for="image-upload-button" class="ui tiny  orange basic button uploads">
+                        <i class="ui upload icon"></i>
+                        <div class="ui dimmer" id="image-dimmer">
+                            <div class="ui indeterminate text loader">Uploading Image</div>
+                        </div>
+                        <span id="upload-button-text">Upload Image</span>
+                        <input type="hidden" id="image-hidden">
+                    </label>
+                    <input type="file" class="inputfile" id="document-upload-button" />
+                    <label for="document-upload-button" class="ui tiny teal basic button uploads">
+                        <i class="ui upload icon"></i>
+                        <div class="ui dimmer" id="document-dimmer">
+                            <div class="ui indeterminate text loader">Uploading Documents</div>
+                        </div>
+                        <span id="upload-document-text">Upload any supporting documents</span>
+                        <input type="hidden" id="doc-hidden">
+                    </label>
+                    <!-- <button class="ui teal button"></button> -->
+                </div>
+
+                <div class="field">
+                    <textarea rows="2" id="specialreq" name="specialreq" placeholder="Special request (if any)"></textarea>
+                </div>
+
+                <div class="center aligned field">
+                    <div class="ui tiny button red " id="request-delete-button">Delete</div>
+                    <div class="ui tiny button orange " id="request-cancel-button">Cancel</div>
+                    <div class="ui tiny button blue " id="request-save-button">Save</div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    $(function() {
+
+        if (isMobileDevice || isSmallScreen()) {
+            $("#title-text").html("Requests");
+            $(".remove-on-mobile").remove();
+            $("#right-plus-button").hide();
+            $("#right-plus-button").attr("data-button-context", "");
+        }
+
+        $("#type-homeless").hide();
+        $("#type-education").hide();
+        $("#type-medical").hide();
+
+        function resetRequestsForm() {
+            // reset form
+            $("#name").val("");
+            $("#description").val("");
+        }
+
+        var fileObject;
+        $("#image-upload-button").on('change', function(e) {
+
+            $("#image-dimmer").addClass("active");
+
+            fileObject = e.target.files[0];
+            var storageRef = firebase.storage().ref('/assets/' + App.User.uid + '/requests/images/' +
+                firebase.firestore.Timestamp.now().toMillis() + '_' + fileObject.name);
+            var uploadTask = storageRef.put(fileObject);
+
+            uploadTask.on('state_changed', function progress(snapshot) {
+
+            }, function error(err) {
+                debug("Error ... ");
+            }, function complete() {
+                // Upload completed successfully, now we can get the download URL
+                uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+
+                    $("#image-hidden").val(downloadURL)
+                    $("#image-dimmer").removeClass("active");
+                });
+            });
+        });
+
+        var docObject;
+        $("#document-upload-button").on('change', function(e) {
+
+            $("#document-dimmer").addClass("active");
+
+            docObject = e.target.files[0];
+            var storageRef = firebase.storage().ref('/assets/' + App.User.uid + '/requests/documents/' +
+                firebase.firestore.Timestamp.now().toMillis() + '_' + docObject.name);
+            var uploadTask = storageRef.put(docObject);
+
+            uploadTask.on('state_changed', function progress(snapshot) {
+
+            }, function error(err) {
+                debug("Error ... ");
+            }, function complete() {
+                // Upload completed successfully, now we can get the download URL
+                uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+
+                    $("#doc-hidden").val(downloadURL);
+                    $("#document-dimmer").removeClass("active");
+                });
+            });
+        });
+
+        function enableRequestFormValidations() {
+            $('#event-form')
+                .form({
+                    on: 'blur',
+                    inline: true,
+                    fields: {
+                        catName: {
+                            identifier: 'catName',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please Select Category Name'
+                            }]
+                        },
+                        eventName: {
+                            identifier: 'eventName',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please enter Event name'
+                            }]
+                        },
+                        startDate: {
+                            identifier: 'startDate',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please enter Date'
+                            }]
+                        },
+                        endDate: {
+                            identifier: 'endDate',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please enter Date'
+                            }]
+                        },
+                        description: {
+                            identifier: 'description',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please enter description'
+                            }]
+                        },
+                        location: {
+                            identifier: 'location',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please enter location'
+                            }]
+                        },
+                        link: {
+                            identifier: 'link',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Please enter link'
+                            }]
+                        },
+                    }
+                });
+        }
+
+
+        let TABLE_NAME = "donation_requests";
+        let edit_mode = false;
+
+        resetRequestsForm(); // clear form
+        $("#request-delete-button").hide();
+        var catValue = null;
+        var selected_donation_request = _.find(App.donation_requests, {
+            id: App.donation_request_id
+        });
+
+        if (selected_donation_request) {
+            edit_mode = true;
+            $(".create-req").html('Edit Request');
+            $("#request-delete-button").show();
+            $("#title").val(selected_donation_request.title);
+            $("#event-description").val(selected_donation_request.description);
+            $("#specialreq").val(selected_donation_request.special_request);
+            $('#category').val(selected_donation_request.category).attr('selected', 'selected');
+            if ($('#category option:selected').text() === 'Homeless') {
+                $("#type-homeless").show()
+                $("#type-education").hide()
+                $("#type-medical").hide()
+                $('#cat-type').val(selected_donation_request.category_type).attr('selected', 'selected');
+                $('#cat-size').val(selected_donation_request.category_size).attr('selected', 'selected');
+                $("#cat-quantity").val(selected_donation_request.category_qty)
+            }
+            if ($('#category option:selected').text() === 'Education') {
+                $("#type-homeless").hide()
+                $("#type-education").show()
+                $("#type-medical").hide()
+                $('#edu-type').val(selected_donation_request.category_type).attr('selected', 'selected');
+                $("#education-amount").val(selected_donation_request.requested_amount)
+            }
+            if ($('#category option:selected').text() === 'Medical') {
+                $("#type-homeless").hide()
+                $("#type-education").hide()
+                $("#type-medical").show()
+                $('#medicals').val(selected_donation_request.category_type).attr('selected', 'selected');
+                $("#medical-amount").val(selected_donation_request.requested_amount)
+            }
+        }
+
+        $("#category").change(function() {
+            if ($('#category option:selected').val() === 'Homeless') {
+                $("#type-homeless").show()
+                $("#type-education").hide()
+                $("#type-medical").hide()
+            } else if ($('#category option:selected').val() === 'Education') {
+                $("#type-education").show()
+                $("#type-homeless").hide()
+                $("#type-medical").hide()
+            } else if ($('#category option:selected').val() === 'Medical') {
+                $("#type-education").hide()
+                $("#type-homeless").hide()
+                $("#type-medical").show()
+            }
+        });
+
+        $("#request-save-button").click(function(e) {
+
+            if (edit_mode) {
+                var updateObjEntry = {
+                    title: $("#title").val(),
+                    description: $("#event-description").val(),
+                    category: $('#category option:selected').val(),
+                    category_size: $('#cat-size option:selected').val(),
+                    category_qty: $('#cat-quantity').val(),
+                    special_request: $('#specialreq').val()
+                }
+
+                if ($("#image-hidden").val() !== "") {
+                    updateObjEntry.image_url = $("#image-hidden").val();
+                }
+
+                if ($("#doc-hidden").val() !== "") {
+                    updateObjEntry.document_url = $("#doc-hidden").val();
+                }
+
+                debug("info", updateObjEntry.category, $('#category option:selected').val());
+                if (updateObjEntry.category === 'Education') {
+                    updateObjEntry.category_type = $('#edu-type option:selected').val();
+                    updateObjEntry.requested_amount = $("#education-amount").val();
+                } else if (updateObjEntry.category === 'Medical') {
+                    updateObjEntry.category_type = $('#medicals option:selected').val();
+                    updateObjEntry.requested_amount = $("#medical-amount").val();
+                } else if (updateObjEntry.category === 'Homeless') {
+                    updateObjEntry.category_type = $('#cat-type option:selected').val();
+                    updateObjEntry.requested_amount = $('#cat-quantity').val() * 35;
+                }
+
+                debug("Updating", updateObjEntry);
+                updateEntry(TABLE_NAME, selected_donation_request.id, updateObjEntry);
+                toastr["success"]("Updated request successfully", "Success");
+            } else {
+                var createRequestObj = {
+                    title: $("#title").val(),
+                    description: $("#event-description").val(),
+                    category: $('#category option:selected').val(),
+                    category_size: $('#cat-size option:selected').val(),
+                    category_qty: $('#cat-quantity').val(),
+                    education_type: $("#edu-type option:selected").val(),
+                    medical_type: $("#medicals option:selected").val(),
+                    special_request: $('#specialreq').val(),
+                    user_id: App.User.uid,
+                    document_url: $("#doc-hidden").val(),
+                    image_url: $("#image-hidden").val(),
+                    status: 'in process'
+                }
+                if (createRequestObj.category === 'Education') {
+                    createRequestObj.category_type = $('#edu-type option:selected').val();
+                    createRequestObj.requested_amount = $("#education-amount").val();
+                } else if (createRequestObj.category === 'Medical') {
+                    createRequestObj.category_type = $('#medicals option:selected').val();
+                    createRequestObj.requested_amount = $("#medical-amount").val();
+                } else if (createRequestObj.category === 'Homeless') {
+                    createRequestObj.category_type = $('#cat-type option:selected').val();
+                    createRequestObj.requested_amount = $('#cat-quantity').val() * 35;
+                }
+                debug("Creating", createRequestObj);
+                createEntry(TABLE_NAME, createRequestObj);
+                toastr["success"]("Created new Donation request successfully", "Success");
+            }
+
+            showPage("#/requests");
+        });
+
+        $("#request-cancel-button").click(function(e) {
+            showPage("#/requests");
+        });
+
+        $("#request-delete-button").click(function(e) {
+            if (edit_mode) {
+                deleteEntry(TABLE_NAME, selected_donation_request.id);
+                toastr["success"]("Deleted request successfully", "Success");
+            }
+            showPage("#/requests");
+        });
+
+    });
+</script>

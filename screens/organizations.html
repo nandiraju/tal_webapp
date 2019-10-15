@@ -1,0 +1,199 @@
+<style>
+    .organization-row-item {
+        cursor: pointer;
+    }
+</style>
+
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+
+    <div class="ui two column stackable grid middle aligned container remove-on-mobile" id="admin-block">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="building alternate outline blue icon"></i>
+                <div class="content">
+                    Organizations
+                    <div class="sub header">Organizations List</div>
+                </div>
+            </h4>
+        </div>
+        <div class="column right aligned">
+            <div class="ui tiny button orange create-organization-button" style="border-radius: 15px;">
+                <i class="plus icon"></i>Add Organization</div>
+            <!-- <div class="ui tiny button red" id="review-users-add-button" style="border-radius: 15px;" id="create-item-button">
+                    <i class="trash icon"></i> Delete
+                </div> -->
+        </div>
+    </div>
+
+    <div class="ui two column stackable grid middle aligned container remove-on-mobile" id="non-admin-block">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="list alternate outline blue icon"></i>
+                <div class="content">
+                    My Organizations
+                    <div class="sub header">Organizations List</div>
+                </div>
+            </h4>
+        </div>
+        <div class="column right aligned">
+            <div class="ui tiny button orange create-organization-button" style="border-radius: 15px;">
+                <i class="plus icon"></i>Add Organization</div>
+            <!-- <div class="ui tiny button red" id="review-users-add-button" style="border-radius: 15px;" id="create-item-button">
+                    <i class="trash icon"></i> Delete
+                </div> -->
+        </div>
+    </div>
+
+    <div class="ui divider remove-on-mobile"></div>
+    <div class="ui container">
+        <div class="ui basic segment" id="organization-item-list-table-holder">
+            <div class="ui active centered inline loader"></div>
+        </div>
+    </div>
+</div>
+
+<template id="organization-item-list-table-template">
+    <table id="organization-list-table" class="ui small table selectable teal celled" width="100%">
+        <thead>
+            <tr>
+                <th>Organization Name</th>
+                <th>Type</th>
+                <th>Created Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- {{#items}} -->
+            <tr class="organization-row-item" data-organization-id={{id}}>
+                <td>{{name}}</td>
+                <td>{{org_type}}</td>
+                <td>{{days_ago}}</td>
+            </tr>
+            <!-- {{/items}} -->
+        </tbody>
+    </table>
+</template>
+
+<template id="organization-item-list-mobile-ui-template">
+    <div class="ui segments raised">
+        {{#items}}
+        <div class="ui segment organization-row-item" data-organization-id={{id}}>
+            <span class="ui label right ribbon">{{org_type}}</span>
+            <div style="margin-top:-25px;">
+                <h5 class="ui header">
+                    {{name}}
+                    <div class="sub header">{{days_ago}}</div>
+                </h5>
+            </div>
+        </div>
+        {{/items}}
+    </div>
+</template>
+
+<script type="text/javascript">
+    $(function() {
+
+        if (App.isMobile || isSmallScreen()) {
+            $("#title-text").html("Organizations");
+            $(".remove-on-mobile").remove();
+            $("#right-plus-button").show();
+            $("#right-plus-button").attr("data-button-context", "new-user-org");
+        }
+
+        $("#non-admin-block").hide();
+        let TABLE_NAME = "organizations";
+        App.organizations = [];
+        const current_user_roles = get_current_user_roles();
+
+        var isAdmin = true;
+        if (current_user_roles && !current_user_roles.includes("tal_admin")) {
+            isAdmin = false;
+            $("#non-admin-block").show();
+            $("#admin-block").remove();
+            $("#create-my-organization-button").click(function(e) {
+                resetOrganizationForm();
+                $("#organization-item-edit-modal").modal("show");
+                //$("body").removeClass('dimmable').css('height', 'auto');
+            });
+        }
+
+        function refreshTableView() {
+            var options = {
+                dom: '<"ui input"f><"ui segment"t><"right-aligned-panel"p>',
+                language: {
+                    //search : "<i class='fa fa-search'></i>",
+                    //info : "_TOTAL_ entries to show (_START_ to _END_)",
+                    info: "",
+                    paginate: {
+                        first: "first",
+                        previous: "<i class='fa fa-chevron-left'></i>",
+                        next: "<i class='fa fa-chevron-right'></i>",
+                        last: "last"
+                    }
+                }
+            };
+            $("#organization-list-table").DataTable();
+            $(".dataTables_filter input").css("border", "none");
+            $(".dataTables_filter input").css("border-bottom", "1px dotted silver");
+            //$(".dataTables_filter input").css("border-radius","15px");
+            $(".dataTables_filter input").css("padding", "8px");
+            $(".dataTables_filter input").css("text-align", "center");
+        }
+
+        // Update UI to show the list
+        function renderOrganizationItems() {
+            debug("Rendering organization items.. ");
+            let get_organizations_qry = App.db.collection(TABLE_NAME);
+
+            if (!isAdmin) {
+                get_organizations_qry = get_organizations_qry.where('user_id', '==', App.User.uid);
+            }
+            get_organizations_qry.get().then(snapshot => {
+                let changes = snapshot.docChanges();
+                App.organizations = [];
+                changes.forEach(change => {
+                    var one_item = change.doc.data();
+                    one_item.id = change.doc.id;
+                    var dt = parseInt(one_item.created_at);
+                    // one_item.days_ago = moment(dt).format('DD MMMM, YYYY [at] HH:mm a');
+                    one_item.days_ago = moment(dt).fromNow();
+                    App.organizations.push(one_item);
+                });
+
+                if (isSmallScreen()) { // Mobile list view
+                    App.Utils.loadTemplateToHolder(
+                        "#organization-item-list-mobile-ui-template",
+                        "#organization-item-list-table-holder", {
+                        items: App.organizations
+                    }
+                    );
+                } else { // Web UI table view
+                    App.Utils.loadTemplateToHolder(
+                        "#organization-item-list-table-template",
+                        "#organization-item-list-table-holder", {
+                        items: App.organizations
+                    }
+                    );
+                    refreshTableView();
+                }
+
+            });
+        }
+
+        $(".create-organization-button").click(function(e) {
+            App.organization_id = undefined;
+            window.location.href = "#/organization_form";
+            e.stopImmediatePropagation();
+        });
+
+        $("body").on("click", ".organization-row-item", function(e) {
+            let id = $(this).attr("data-organization-id");
+            App.organization_id = id;
+            showPage("#/organization_form");
+            e.stopImmediatePropagation();
+        });
+
+        App.db.collection(TABLE_NAME).onSnapshot(snapshot => {
+            renderOrganizationItems();
+        });
+    });
+</script>

@@ -1,0 +1,304 @@
+<style>
+
+</style>
+<div class="screen-wrapper" style="padding-right:10px;margin-top:20px;">
+    <div class="ui two column stackable grid middle aligned container">
+        <div class="column">
+            <h4 class="ui header ui blue">
+                <i class="heart teal icon"></i>
+                <div class="content">
+                    Review Users
+                    <div class="sub header">Review registered users</div>
+                </div>
+            </h4>
+        </div>
+        <div class="column right aligned">
+            <!-- <div class="ui tiny button orange" id="review-users-add-button" style="border-radius: 15px;"
+                id="create-item-button">
+                <i class="plus icon"></i> Add User
+            </div> -->
+            <div class="ui tiny button blue" id="review-users-approve-button" style="border-radius: 15px;"
+                id="create-item-button">
+                <i class="check icon"></i> Approve</div>
+            <div class="ui tiny button red" id="review-users-deny-button" style="border-radius: 15px;"
+                id="create-item-button">
+                <i class="delete icon"></i> Deny</div>
+        </div>
+    </div>
+    <div class="ui divider"></div>
+    <div class="ui container">
+        <div class="ui basic segment" id="review-users-item-list-table-holder">
+            <div class="ui active centered inline loader"></div>
+        </div>
+        <div class="ui tiny modal" id="review-user-add-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Add User
+                    <div class="sub header">Enter user details</div>
+                </h3>
+                <br />
+                <div class="ui form" id="review-user-add-form">
+                    <form class="ui large form">
+                        <div class="ui segment">
+                            <div class="two fields">
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="user outline icon"></i>
+                                        <input type="text" name="firstname" placeholder="First Name">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="user blue outline icon"></i>
+                                        <input type="text" name="lastname" placeholder="Last Name">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="ui left icon input">
+                                    <i class="mail green icon"></i>
+                                    <input type="text" name="email" placeholder="E-mail address">
+                                </div>
+                            </div>
+
+                            <div class="two fields">
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="lock red icon"></i>
+                                        <input type="password" name="password" placeholder="Password">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="lock red icon"></i>
+                                        <input type="password" name="confirm_password" placeholder="confirm_password">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ui error message"></div>
+                    </form>
+                </div>
+            </div>
+            <div class="actions">
+                <!-- <button class="ui button blue" id="review-user-add-submit-button">Add</button> -->
+            </div>
+        </div>
+        <div class="ui tiny modal" id="review-users-approve-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Approve Request(s)
+                </h3>
+                <br />
+                <div class="ui form" id="review-users-approve-form">
+                    <div class="field">
+                        <textarea rows="2" id="review-users-approve-comment" name="description"
+                            placeholder="Enter your comments"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="ui button blue" id="review-users-approve-submit-button">Approve</button>
+            </div>
+        </div>
+        <div class="ui tiny modal" id="review-users-deny-modal">
+            <i class="close icon"></i>
+            <div class="content global-modal-content">
+                <h3 class="ui teal header center aligned">
+                    Deny Request(s)
+                </h3>
+                <br />
+                <div class="ui form" id="review-users-deny-form">
+                    <div class="field">
+                        <textarea rows="2" id="review-users-deny-comment" name="description"
+                            placeholder="Enter your comments"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="ui button blue" id="review-users-deny-submit-button">Deny</button>
+            </div>
+        </div>
+        <template id="review-users-item-list-table-template">
+            <table id="review-users-list-table" class="ui small table selectable teal celled" width="100%">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th class="centered_td">Status</th>
+                        <th>Created Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- {{#items}} -->
+                    <tr class="review-users-row-item" data-review-user-row-id={{id}}>
+                        <td style="text-align: center">
+                            <div class="ui checkbox">
+                                <input type="checkbox" name="users-item-checkbox" value={{id}}
+                                    data-review-user-checkbox-id={{id}} class="users-item-checkbox-cls" />
+                                <label></label>
+                            </div>
+                        </td>
+                        <td>{{first_name}}</td>
+                        <td>{{last_name}}</td>
+                        <td class="centered_td">
+                            {{#isActive}}
+                            <!-- <label class="ui mini empty circular green label"></label> -->
+                            <i class="ui check icon green"></i> Active
+                            {{/isActive}}
+                            {{^isActive}}
+                            <i class="ui x icon icon red"></i> Denied
+                            <!-- <label class="ui mini empty circular red label"></label> -->
+                            {{/isActive}}
+                        </td>
+                        <td>{{days_ago}}</td>
+                    </tr>
+                    <!-- {{/items}} -->
+                </tbody>
+            </table>
+        </template>
+    </div>
+</div>
+<script type="text/javascript">
+    App.TemplateController = {
+        data: [],
+        handleActions: function (action) {
+            alert("Fired");
+        },
+        bindListener: function () {
+            App.Events.listen("SEARCH_ACTIONS", this.handleActions);
+        },
+        render: function () {
+            var screen = App.Screens.get("screens/search.html");
+            $("#stage").html(screen);
+        }
+    };
+
+    $(function () {
+        let TABLE_NAME = "user_profile";
+        let all_users = [];
+
+        function refreshTableView() {
+            var options = {
+                dom: '<"ui input"f><"ui segment"t><"right-aligned-panel"p>',
+                language: {
+                    //search : "<i class='fa fa-search'></i>",
+                    //info : "_TOTAL_ entries to show (_START_ to _END_)",
+                    info: "",
+                    paginate: {
+                        first: "first",
+                        previous: "<i class='fa fa-chevron-left'></i>",
+                        next: "<i class='fa fa-chevron-right'></i>",
+                        last: "last"
+                    }
+                }
+            };
+            $("#review-users-list-table").DataTable();
+            $(".dataTables_filter input").css("border", "none");
+            $(".dataTables_filter input").css("border-bottom", "1px dotted silver");
+            //$(".dataTables_filter input").css("border-radius","15px");
+            $(".dataTables_filter input").css("padding", "8px");
+            $(".dataTables_filter input").css("text-align", "center");
+        }
+
+        // Update UI to show the list
+        function renderRequestItems() {
+            debug("Rendering approve request items.. ");
+            App.db.collection(TABLE_NAME).get().then(snapshot => {
+                let changes = snapshot.docChanges();
+                all_users = [];
+                changes.forEach(change => {
+                    var one_item = change.doc.data();
+                    one_item.id = change.doc.id;
+                    var dt = parseInt(one_item.created_at);
+                    // one_item.days_ago = moment(dt).format('DD MMMM, YYYY [at] HH:mm a');
+                    one_item.days_ago = moment(dt).fromNow();
+                    one_item.isActive = (one_item.account_status == 'active') ? true : false;
+                    all_users.push(one_item);
+                });
+
+                App.Utils.loadTemplateToHolder(
+                    "#review-users-item-list-table-template",
+                    "#review-users-item-list-table-holder", {
+                        items: all_users
+                    }
+                );
+                refreshTableView();
+            });
+        }
+
+        App.db.collection(TABLE_NAME).onSnapshot(snapshot => {
+            renderRequestItems();
+        });
+
+        // Show add user modal
+        $("#review-users-add-button").on("click", function () {
+            $("#review-user-add-modal").modal("show");
+        })
+
+        // deny users Modal
+        $("#review-users-deny-button").on("click", function () {
+            $("#review-users-deny-comment").val("");
+            $("#review-users-deny-modal").modal("show");
+        })
+
+        // approve users Modal
+        $("#review-users-approve-button").on("click", function () {
+            $("#review-users-approve-comment").val("");
+            $("#review-users-approve-modal").modal("show");
+        })
+
+        // Approve selected users
+        $("#review-users-approve-submit-button").on("click", function () {
+            const approve_comment_length = $("#review-users-approve-comment").val().trim().length
+            if (approve_comment_length < 10) {
+                toastr["error"]("Please enter comments. atleast 10 chars");
+                return;
+            }
+            const item_selected_count = $(".users-item-checkbox-cls:checked").length
+            if (item_selected_count > 0) {
+                $(".users-item-checkbox-cls:checked").each(function () {
+                    debug("updating each items");
+                    const itemId = $(this).val()
+                    updateEntry(TABLE_NAME, itemId, {
+                        account_status: 'active'
+                    });
+                })
+                $("#review-users-approve-modal").modal("hide");
+                toastr["success"]("users approved successfully", "Success");
+            } else {
+                toastr["error"]("No user(s) selected", "Error");
+            }
+        })
+
+        // Deny selected Users
+        $("#review-users-deny-submit-button").on("click", function () {
+            const deny_comment_length = $("#review-users-deny-comment").val().trim().length;
+            if (deny_comment_length < 10) {
+                toastr["error"]("Please enter comments. atleast 10 chars");
+                return;
+            }
+
+            const item_selected_count = $(".users-item-checkbox-cls:checked").length;
+            if (item_selected_count > 0) {
+                $(".users-item-checkbox-cls:checked").each(function () {
+                    debug("updating each items");
+                    const itemId = $(this).val()
+                    updateEntry(TABLE_NAME, itemId, {
+                        account_status: 'denied'
+                    });
+                })
+                $("#review-users-deny-modal").modal("hide");
+                toastr["success"]("users denied successfully", "Success");
+            } else {
+                toastr["error"]("No user(s) selected", "Error");
+            }
+        })
+
+        renderRequestItems();
+    });
+</script>
